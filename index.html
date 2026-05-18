@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sala de Situación: Bolivia, Mayo 2026</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #F1F5F9; /* Slate 100 */
+            color: #1E293B; /* Slate 800 */
+            font-family: 'Inter', sans-serif;
+        }
+        .font-mono-numbers {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 300px;
+        }
+        
+        /* Nav and Tabs */
+        .nav-button {
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        .nav-button::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background-color: #E11D48;
+            transition: width 0.3s ease;
+        }
+        .nav-button.active {
+            color: #E11D48;
+            font-weight: 600;
+        }
+        .nav-button.active::after {
+            width: 100%;
+        }
+
+        /* Section Transitions */
+        .section-content {
+            display: none;
+            opacity: 0;
+            transform: translateY(15px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .section-content.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Marquee Animation */
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .marquee-content {
+            display: inline-block;
+            animation: marquee 30s linear infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* Glow Effects */
+        .glow-text-red {
+            text-shadow: 0 0 15px rgba(225, 29, 72, 0.4);
+        }
+        .pulse-dot {
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(225, 29, 72, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Top Alert Bar -->
+    <div class="bg-slate-900 text-slate-300 text-xs font-mono-numbers py-1.5 marquee-container border-b border-rose-900">
+        <div class="marquee-content flex items-center space-x-8">
+            <span class="text-rose-500 font-bold">🔴 ALERTA DE INTELIGENCIA:</span>
+            <span>Intento de toma de peaje en Suticollo (Cochabamba) repelido.</span>
+            <span class="text-slate-500">|</span>
+            <span>Gremiales de Santa Cruz reportan amenazas de multas si no asisten a marchas.</span>
+            <span class="text-slate-500">|</span>
+            <span>Reporte FMI: Riesgo de inflación importada aumenta por bloqueos logísticos.</span>
+            <span class="text-slate-500">|</span>
+            <span>Monitoreo Redes: Se detectan 450 cuentas bot amplificando desinformación sobre Ley 1720.</span>
+            <span class="text-slate-500">|</span>
+            <span class="text-rose-500 font-bold">🔴 ALERTA:</span>
+            <span>Dirigencia evista amenaza con cerco a La Paz en 48 horas.</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-2 bg-rose-600 rounded-full pulse-dot"></div>
+                        <span class="text-xl font-extrabold text-slate-800 tracking-tight">SALA DE SITUACIÓN <span class="text-rose-600 font-light">| Bolivia '26</span></span>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-6">
+                    <button onclick="nav('resumen')" id="btn-resumen" class="nav-button active py-5 text-sm font-medium text-slate-600 hover:text-rose-600 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                        Panel Principal
+                    </button>
+                    <button onclick="nav('actores')" id="btn-actores" class="nav-button py-5 text-sm font-medium text-slate-600 hover:text-rose-600 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        Actores y Demandas
+                    </button>
+                    <button onclick="nav('economia')" id="btn-economia" class="nav-button py-5 text-sm font-medium text-slate-600 hover:text-rose-600 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                        Impacto Económico
+                    </button>
+                    <button onclick="nav('estrategia')" id="btn-estrategia" class="nav-button py-5 text-sm font-medium text-slate-600 hover:text-rose-600 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                        Análisis Estratégico
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Nav -->
+        <div class="md:hidden flex overflow-x-auto bg-slate-50 border-t border-slate-200 hide-scroll">
+            <button onclick="nav('resumen')" id="btn-m-resumen" class="nav-button active px-4 py-3 text-xs font-medium whitespace-nowrap">Panel</button>
+            <button onclick="nav('actores')" id="btn-m-actores" class="nav-button px-4 py-3 text-xs font-medium whitespace-nowrap">Actores</button>
+            <button onclick="nav('economia')" id="btn-m-economia" class="nav-button px-4 py-3 text-xs font-medium whitespace-nowrap">Economía</button>
+            <button onclick="nav('estrategia')" id="btn-m-estrategia" class="nav-button px-4 py-3 text-xs font-medium whitespace-nowrap">Estrategia</button>
+        </div>
+    </nav>
+
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        
+        <header class="mb-8 flex flex-col md:flex-row md:items-end justify-between border-b border-slate-200 pb-6">
+            <div class="max-w-2xl">
+                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Radiografía de Marchas y Bloqueos</h1>
+                <p class="text-slate-500 mt-2 text-md leading-relaxed">Monitor estratégico de la coyuntura de conflictividad bajo la administración del Presidente Rodrigo Paz. Identificación de tácticas de desgaste y estrangulamiento económico.</p>
+            </div>
+            <div class="mt-6 md:mt-0 bg-white border border-rose-100 rounded-xl p-4 shadow-sm flex flex-col items-end min-w-[280px]">
+                <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1 flex items-center gap-2">
+                    <span class="relative flex h-2 w-2">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 bg-rose-600"></span>
+                    </span>
+                    Pérdida Nacional Acumulada
+                </p>
+                <p id="header-live-loss" class="text-4xl font-black text-rose-600 font-mono-numbers tracking-tighter glow-text-red">$0</p>
+            </div>
+        </header>
+
+        <section id="sec-resumen" class="section-content active">
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Card 1 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col relative overflow-hidden group hover:border-slate-300 transition">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition">
+                        <svg class="w-16 h-16 text-slate-800" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L1 21h22M12 6l7.5 13h-15M11 10h2v5h-2M11 16h2v2h-2"></path></svg>
+                    </div>
+                    <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Puntos de Bloqueo</h3>
+                    <div class="flex items-baseline gap-2">
+                        <p class="text-5xl font-black text-slate-800">47</p>
+                        <span class="text-sm font-medium text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full">↑ 12%</span>
+                    </div>
+                    <p class="text-sm text-slate-500 mt-4">Vías troncales interrumpidas, focalizadas en Cbba y SCZ.</p>
+                </div>
+
+                <!-- Card 2 (Live) -->
+                <div class="bg-slate-900 rounded-2xl shadow-lg border border-slate-800 p-6 flex flex-col relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-rose-900/20 to-transparent"></div>
+                    <h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2 z-10">Tasa de Sangría Económica</h3>
+                    <p id="card-live-loss" class="text-4xl font-black text-white font-mono-numbers tracking-tighter z-10 mb-1">$0</p>
+                    <div class="flex items-center gap-2 mt-auto z-10">
+                        <div class="w-full bg-slate-800 rounded-full h-1.5">
+                            <div class="bg-rose-500 h-1.5 rounded-full animate-[pulse_2s_ease-in-out_infinite]" style="width: 100%"></div>
+                        </div>
+                        <span class="text-xs text-rose-400 font-mono-numbers whitespace-nowrap">+$324 / seg</span>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col relative overflow-hidden group hover:border-slate-300 transition">
+                    <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Costo Logístico Inyectado</h3>
+                    <p id="card-live-cost" class="text-4xl font-black text-slate-700 font-mono-numbers tracking-tighter mb-1">$0</p>
+                    <p class="text-sm text-slate-500 mt-auto">Financiamiento diario estimado para sostener carpas, viáticos y transporte de bases.</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Apreciación de Situación
+                </h3>
+                <p class="text-slate-600 leading-relaxed text-sm text-justify">
+                    El escenario actual bajo la presidencia de Rodrigo Paz replica patrones históricos de desestabilización. La articulación de bloqueos no responde a una demanda unificada, sino a una <strong>táctica de enjambre</strong> donde diversos sectores (transporte, gremiales, campesinos) son movilizados bajo pretextos específicos —como el rechazo a normativas de fiscalización (Ley 1720) o la escasez inducida de divisas— con un único hilo conductor político: el desgaste del Ejecutivo, el estrangulamiento de las ciudades capitales y el forzamiento de un escenario de elecciones anticipadas impulsado por la facción radical de la oposición interna.
+                </p>
+            </div>
+        </section>
+
+        <section id="sec-actores" class="section-content">
+            <div class="flex justify-between items-end mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">Mapeo de Actores y Demandas</h2>
+                    <p class="text-slate-500 text-sm mt-1">Identificación de frentes de movilización y excusas operativas.</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Organización / Sector</th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Demanda Pretexto</th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Nivel de Amenaza</th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Análisis de Vínculo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-actores" class="bg-white divide-y divide-slate-100 text-sm">
+                            <!-- JS Injected -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="sec-economia" class="section-content">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-800">Daño a la Cadena Productiva y Logística</h2>
+                <p class="text-slate-500 text-sm mt-1">Métricas del impacto de la paralización nacional.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <!-- Gráfica de Pérdidas -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[400px]">
+                    <h3 class="text-sm font-bold text-slate-800 mb-1 uppercase tracking-wider">Evolución de Pérdidas Diarias</h3>
+                    <p class="text-xs text-slate-400 mb-6">Millones de USD (Mayo 2026)</p>
+                    <div class="chart-container flex-grow">
+                        <canvas id="chartPerdidas"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Gráfica de Sectores -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[400px]">
+                    <h3 class="text-sm font-bold text-slate-800 mb-1 uppercase tracking-wider">Impacto Sectorial</h3>
+                    <p class="text-xs text-slate-400 mb-6">Distribución del daño por rubro productivo (%)</p>
+                    <div class="chart-container flex-grow relative">
+                        <canvas id="chartSectores"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financiamiento (Movido a esta sección para unificar economía) -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-sm font-bold text-slate-800 mb-4 uppercase tracking-wider">Estimación: Costo Operativo de la Desestabilización</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                    <div class="col-span-1 md:col-span-2 chart-container h-[250px]">
+                        <canvas id="chartFinanzas"></canvas>
+                    </div>
+                    <div class="col-span-1 bg-slate-50 p-5 rounded-xl border border-slate-200">
+                        <h4 class="font-bold text-slate-700 text-sm mb-3">Fuentes de Financiamiento (Inteligencia):</h4>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-2 text-xs text-slate-600">
+                                <span class="text-rose-500 mt-0.5">●</span>
+                                <span><strong>Aportes Sindicales:</strong> Multas extorsivas a bases gremiales.</span>
+                            </li>
+                            <li class="flex items-start gap-2 text-xs text-slate-600">
+                                <span class="text-rose-500 mt-0.5">●</span>
+                                <span><strong>Economías Ilícitas:</strong> Protección de minería ilegal y narcotráfico ante intentos de fiscalización.</span>
+                            </li>
+                            <li class="flex items-start gap-2 text-xs text-slate-600">
+                                <span class="text-rose-500 mt-0.5">●</span>
+                                <span><strong>Aparato Político:</strong> Desvío de fondos de gestiones subnacionales afines a la facción radical.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="sec-estrategia" class="section-content">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-800">Arquitectura de la Desestabilización</h2>
+                <p class="text-slate-500 text-sm mt-1">Análisis táctico comparativo y fases del Golpe Blando.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                
+                <!-- Termómetro del Golpe Blando -->
+                <div class="col-span-1 md:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-2 bg-rose-100 text-rose-600 rounded-lg">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800">Termómetro del "Golpe Blando"</h3>
+                    </div>
+                    
+                    <p class="text-sm text-slate-600 mb-8 text-justify">
+                        La narrativa opositora muta estratégicamente. Demandas como la <strong>Ley 1720</strong> no buscan resolverse; operan como "blancos móviles". Si el Gobierno cede o dialoga, la dirigencia inmediatamente escala a la siguiente exigencia para no desmovilizar las calles, confirmando que el objetivo final es la fractura del orden constitucional.
+                    </p>
+
+                    <div class="relative border-l-2 border-slate-200 ml-3 space-y-8 pb-4">
+                        <!-- Step 1 -->
+                        <div class="relative pl-6">
+                            <div class="absolute w-4 h-4 bg-slate-400 rounded-full -left-[9px] top-1 border-4 border-white"></div>
+                            <h4 class="font-bold text-slate-400 text-sm">Fase 1: Siembra de Pánico (Consolidada)</h4>
+                            <p class="text-xs text-slate-400 mt-1">Ataque especulativo a la moneda y ocultamiento de combustible para generar zozobra social y predisposición a la protesta.</p>
+                        </div>
+                        
+                        <!-- Step 2 -->
+                        <div class="relative pl-6">
+                            <div class="absolute w-4 h-4 bg-slate-700 rounded-full -left-[9px] top-1 border-4 border-white"></div>
+                            <h4 class="font-bold text-slate-700 text-sm">Fase 2: Pretextos Sectoriales (Superada)</h4>
+                            <p class="text-xs text-slate-500 mt-1">Instrumentalización de la <strong>Ley 1720</strong> (Lucha contra ganancias ilícitas). Campañas de desinformación infundiendo miedo en gremiales y transportistas para sacarlos a las calles.</p>
+                        </div>
+
+                        <!-- Step 3 -->
+                        <div class="relative pl-6 bg-rose-50 p-4 rounded-r-xl border border-rose-100 -ml-2">
+                            <div class="absolute w-5 h-5 bg-rose-500 rounded-full -left-[11px] top-4 border-4 border-white pulse-dot"></div>
+                            <div class="flex justify-between items-center mb-1">
+                                <h4 class="font-bold text-rose-700 text-sm">Fase 3: Mutación Política (Fase Actual)</h4>
+                                <span class="bg-rose-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">En Ejecución</span>
+                            </div>
+                            <p class="text-xs text-slate-600 mt-1">La Ley 1720 pierde fuerza como excusa. Los dirigentes radicales (Evistas) cambian el discurso y exigen directamente la renuncia de ministros clave y el control del aparato estatal. Bloqueo de créditos en la Asamblea.</p>
+                        </div>
+
+                        <!-- Step 4 -->
+                        <div class="relative pl-6">
+                            <div class="absolute w-4 h-4 bg-red-800 rounded-full -left-[9px] top-1 border-4 border-white"></div>
+                            <h4 class="font-bold text-slate-800 text-sm">Fase 4: Objetivo Final (Amenaza Latente)</h4>
+                            <p class="text-xs text-slate-500 mt-1">Ultimátum. Cerco total a las ciudades para asfixiar a la población civil, forzar la renuncia de Rodrigo Paz y adelantar elecciones a medida de la facción radical.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patrón Histórico -->
+                <div class="col-span-1 md:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-2 bg-slate-100 text-slate-600 rounded-lg">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800">Patrón Histórico</h3>
+                    </div>
+                    
+                    <p class="text-sm text-slate-600 mb-5">El manual de operaciones actual es una calca táctica de crisis anteriores, usando el aislamiento urbano como arma de coerción.</p>
+
+                    <div class="space-y-4">
+                        <div class="p-4 bg-slate-50 rounded-xl border-l-4 border-slate-400">
+                            <div class="flex justify-between items-center mb-1">
+                                <h4 class="font-bold text-slate-700 text-sm">Octubre 2003</h4>
+                                <span class="text-xs text-slate-400">Guerra del Gas</span>
+                            </div>
+                            <p class="text-xs text-slate-500">Corte de la vía El Alto-La Paz. Desabastecimiento de alimentos y combustibles para generar caos urbano y forzar renuncia.</p>
+                        </div>
+                        
+                        <div class="p-4 bg-slate-50 rounded-xl border-l-4 border-slate-600">
+                            <div class="flex justify-between items-center mb-1">
+                                <h4 class="font-bold text-slate-700 text-sm">Noviembre 2019</h4>
+                                <span class="text-xs text-slate-400">Crisis Post-Electoral</span>
+                            </div>
+                            <p class="text-xs text-slate-500">Instrucción documentada de "no dejar pasar ni un alimento" a las ciudades. Bloqueo de plantas de hidrocarburos.</p>
+                        </div>
+
+                        <div class="p-4 bg-rose-50 rounded-xl border-l-4 border-rose-600 shadow-sm">
+                            <div class="flex justify-between items-center mb-1">
+                                <h4 class="font-bold text-rose-800 text-sm">Mayo 2026</h4>
+                                <span class="text-xs text-rose-500 font-bold">Crisis Actual</span>
+                            </div>
+                            <p class="text-xs text-rose-700">Réplica exacta. Estrangulamiento del eje troncal (Cochabamba - Santa Cruz) para agotar inventarios de diésel y forzar el colapso logístico.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 py-8 text-center text-xs mt-auto border-t border-rose-900">
+        <p class="font-mono-numbers mb-1">SISTEMA DE INTELIGENCIA Y ESTRATEGIA - ACCESO CLASIFICADO</p>
+        <p>Monitor de Coyuntura Política y Económica · Administración Paz · Mayo 2026</p>
+    </footer>
+
+    <script>
+        // Data Configuration
+        const actorsData = [
+            { 
+                org: "CSUTCB (Facción Radical Evista)", 
+                demanda: "Renuncia de Ministros, adelantamiento de elecciones. (Abandonaron demandas económicas)", 
+                amenaza: "Crítica", 
+                amenazaColor: "bg-red-100 text-red-700 border-red-200",
+                vinculo: "Ejecutores directos de la estrategia de 'Golpe Blando'. Controlan bloqueos en el trópico y valles." 
+            },
+            { 
+                org: "Federación de Transporte Pesado", 
+                demanda: "Abrogación total de Ley 1720, dólares y diésel.", 
+                amenaza: "Alta",
+                amenazaColor: "bg-orange-100 text-orange-700 border-orange-200", 
+                vinculo: "Instrumentalizados por el miedo a la fiscalización de sus patrimonios. Proveen la logística pesada (camiones cruzados)." 
+            },
+            { 
+                org: "Gremiales y Comerciantes Minoristas", 
+                demanda: "Rechazo a facturación electrónica y 'miedo' desinformado a la Ley 1720.", 
+                amenaza: "Media",
+                amenazaColor: "bg-yellow-100 text-yellow-700 border-yellow-200", 
+                vinculo: "Bases movilizadas por coacción de sus dirigentes y desinformación en redes sociales." 
+            },
+            { 
+                org: "Mineros Cooperativistas (Auríferos)", 
+                demanda: "Impunidad ambiental, rechazo a impuestos y áreas protegidas.", 
+                amenaza: "Alta",
+                amenazaColor: "bg-orange-100 text-orange-700 border-orange-200", 
+                vinculo: "Sector con alta liquidez y capacidad de choque (uso de dinamita). Posibles financistas tácticos." 
+            }
+        ];
+
+        // Chart Data Configurations
+        const chartThemes = {
+            font: "'Inter', sans-serif",
+            color: '#64748b',
+            gridColor: '#f1f5f9'
+        };
+
+        const economicData = {
+            labels: ['1 May', '2 May', '3 May', '4 May', '5 May', '6 May', '7 May', '8 May', '9 May', '10 May', '11 May', '12 May', '13 May', 'Hoy'],
+            losses: [8, 12, 15, 15, 18, 22, 24, 25, 26, 28, 28, 28, 28, 28] 
+        };
+
+        const sectorData = {
+            labels: ['Agropecuario/Avícola', 'Transporte Internacional', 'Industria Exportadora', 'Comercio Interno', 'Turismo/Servicios'],
+            values: [40, 25, 15, 15, 5]
+        };
+
+        const financeData = {
+            labels: ['Alimentación/Ollas', 'Transporte/Buses', 'Viáticos Diarios', 'Material (Carpas/Explosivos)'],
+            values: [35000, 20000, 25000, 5000]
+        };
+
+        let chartInstances = {};
+
+        // --- SISTEMA DE MONITOREO EN TIEMPO REAL ---
+        // Simulación: Inició el 1 de Mayo 2026.
+        const startOfCrisis = new Date('2026-05-01T00:00:00').getTime();
+        const lossPerSecond = 28000000 / 86400; // $324 USD/segundo
+        const costPerSecond = 85000 / 86400;    // $0.98 USD/segundo logístico
+
+        function formatMoney(amount) {
+            return '$' + amount.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+        }
+
+        function updateRealTimeCounters() {
+            const now = new Date().getTime();
+            // Fijamos la fecha de la simulación al 14 de Mayo si estamos en el pasado
+            const simulatedNow = Math.max(now, new Date('2026-05-14T09:00:00').getTime()); 
+            
+            const elapsedSeconds = (simulatedNow - startOfCrisis) / 1000;
+            
+            const currentLoss = elapsedSeconds * lossPerSecond;
+            const currentCost = elapsedSeconds * costPerSecond;
+
+            document.getElementById('header-live-loss').innerText = formatMoney(currentLoss);
+            
+            const cardLossEl = document.getElementById('card-live-loss');
+            if(cardLossEl) cardLossEl.innerText = formatMoney(currentLoss);
+            
+            const cardCostEl = document.getElementById('card-live-cost');
+            if(cardCostEl) cardCostEl.innerText = formatMoney(currentCost);
+            
+            requestAnimationFrame(updateRealTimeCounters);
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tabla-actores');
+            let html = '';
+            actorsData.forEach(row => {
+                html += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100 last:border-0">
+                        <td class="px-6 py-4 text-sm font-bold text-slate-800 align-top">${row.org}</td>
+                        <td class="px-6 py-4 text-sm text-slate-600 align-top max-w-xs">
+                            ${row.demanda.includes('Ley 1720') ? row.demanda.replace('Ley 1720', '<span class="font-bold text-rose-600">Ley 1720</span>') : row.demanda}
+                        </td>
+                        <td class="px-6 py-4 align-top">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${row.amenazaColor}">
+                                ${row.amenaza}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-slate-500 align-top leading-relaxed">${row.vinculo}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function initCharts() {
+            Chart.defaults.color = chartThemes.color;
+            Chart.defaults.font.family = chartThemes.font;
+            
+            // Destroy existing instances
+            Object.values(chartInstances).forEach(inst => inst.destroy());
+
+            // 1. Chart Pérdidas
+            const ctxPerdidas = document.getElementById('chartPerdidas');
+            if(ctxPerdidas) {
+                chartInstances.perdidas = new Chart(ctxPerdidas.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: economicData.labels,
+                        datasets: [{
+                            label: 'Pérdida (M USD)',
+                            data: economicData.losses,
+                            borderColor: '#E11D48',
+                            backgroundColor: 'rgba(225, 29, 72, 0.1)',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#E11D48',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: chartThemes.gridColor } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            // 2. Chart Sectores
+            const ctxSectores = document.getElementById('chartSectores');
+            if(ctxSectores) {
+                chartInstances.sectores = new Chart(ctxSectores.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: sectorData.labels,
+                        datasets: [{
+                            data: sectorData.values,
+                            backgroundColor: ['#9F1239', '#E11D48', '#FB7185', '#334155', '#94A3B8'],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false, cutout: '65%',
+                        plugins: {
+                            legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } } }
+                        }
+                    }
+                });
+            }
+
+            // 3. Chart Finanzas
+            const ctxFinanzas = document.getElementById('chartFinanzas');
+            if(ctxFinanzas) {
+                chartInstances.finanzas = new Chart(ctxFinanzas.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: financeData.labels,
+                        datasets: [{
+                            label: 'Gasto Diario (USD)',
+                            data: financeData.values,
+                            backgroundColor: '#1E293B',
+                            borderRadius: 4,
+                            barPercentage: 0.6
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y', // Horizontal bar chart for better readability
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { beginAtZero: true, grid: { color: chartThemes.gridColor } },
+                            y: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Navegación de Tabs
+        function nav(sectionId) {
+            document.querySelectorAll('.section-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-button').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById('sec-' + sectionId).classList.add('active');
+            
+            const btn = document.getElementById('btn-' + sectionId);
+            if(btn) btn.classList.add('active');
+            const mBtn = document.getElementById('btn-m-' + sectionId);
+            if(mBtn) mBtn.classList.add('active');
+
+            // Render charts if tab is Economy
+            if(sectionId === 'economia') {
+                // Pequeño timeout para permitir que el display:block se aplique antes de renderizar
+                setTimeout(initCharts, 50); 
+            }
+        }
+
+        // Initialization
+        window.onload = () => {
+            renderTable();
+            updateRealTimeCounters();
+            
+            // Resize handler para los charts
+            window.addEventListener('resize', () => {
+                if(document.getElementById('sec-economia').classList.contains('active')) {
+                    initCharts();
+                }
+            });
+        };
+    </script>
+</body>
+</html>
