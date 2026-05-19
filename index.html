@@ -215,19 +215,54 @@
 
             <section id="sec-actores" class="section-content">
                 <div class="mb-6"><h2 class="text-2xl font-bold text-slate-800">Mapeo de Actores y Demandas</h2></div>
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-slate-200">
-                            <thead class="bg-slate-50">
-                                <tr>
-                                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Organización / Sector</th>
-                                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Demanda Pretexto</th>
-                                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Nivel Amenaza</th>
-                                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Análisis de Vínculo</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabla-actores" class="bg-white divide-y divide-slate-100 text-sm"></tbody>
-                        </table>
+                
+                <div class="space-y-8">
+                    <!-- Tabla Actores Sociales -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-1.5 h-4 bg-orange-500 rounded"></div>
+                            <h3 class="text-lg font-bold text-slate-700">Actores Sociales</h3>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-slate-200">
+                                    <thead class="bg-slate-50">
+                                        <tr>
+                                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Organización / Sector</th>
+                                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Categoría</th>
+                                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Demanda Pretexto</th>
+                                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Nivel Amenaza</th>
+                                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Análisis de Vínculo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabla-actores-sociales" class="bg-white divide-y divide-slate-100 text-sm"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabla Actores Institucionales -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-1.5 h-4 bg-blue-600 rounded"></div>
+                            <h3 class="text-lg font-bold text-slate-700">Actores Institucionales</h3>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-slate-200">
+                                    <thead class="bg-slate-50">
+                                        <tr>
+                                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Organización / Sector</th>
+                                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Categoría</th>
+                                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Demanda Pretexto</th>
+                                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Nivel Amenaza</th>
+                                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Análisis de Vínculo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabla-actores-institucionales" class="bg-white divide-y divide-slate-100 text-sm"></tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -331,9 +366,11 @@
         let db = {
             kpis: { puntos: 47, tendencia: "+12%", perdidaDiaria: 28000000, costoDiario: 85000 },
             actores: [
-                { org: "CSUTCB (Evista)", demanda: "Renuncia y elecciones anticipadas", amenaza: "Crítica", vinculo: "Línea directa opositora." },
-                { org: "Transporte Pesado", demanda: "Abrogación Ley 1720, dólares, diésel.", amenaza: "Alta", vinculo: "Instrumentalizados logísticamente." },
-                { org: "Gremiales", demanda: "Rechazo Ley 1720 por desinformación.", amenaza: "Media", vinculo: "Bases coaccionadas." }
+                { org: "CSUTCB (Evista)", categoria: "Actor Social", demanda: "Renuncia y elecciones anticipadas", amenaza: "Crítica", vinculo: "Línea directa opositora." },
+                { org: "Transporte Pesado", categoria: "Actor Social", demanda: "Abrogación Ley 1720, dólares, diésel.", amenaza: "Alta", vinculo: "Instrumentalizados logísticamente." },
+                { org: "Gremiales", categoria: "Actor Social", demanda: "Rechazo Ley 1720 por desinformación.", amenaza: "Media", vinculo: "Bases coaccionadas." },
+                { org: "Asamblea Legislativa", categoria: "Actor Institucional", demanda: "Bloqueo de créditos internacionales.", amenaza: "Alta", vinculo: "Coordinación política con bloqueadores." },
+                { org: "Gobierno Departamental de Cbba.", categoria: "Actor Institucional", demanda: "Diálogo sin represión policial.", amenaza: "Media", vinculo: "Postura ambivalente frente a bloqueos." }
             ],
             ecoLine: { labels: ['1 May','2 May','3 May','4 May','5 May','6 May','Hoy'], data: [15, 18, 22, 24, 26, 28, 28] },
             ecoPie: { labels: ['Agro', 'Transporte', 'Industria', 'Comercio'], data: [40, 25, 20, 15] },
@@ -440,12 +477,13 @@
                     }
                 }
 
-                // 2. Cargar Actores (Columnas esperadas: Organizacion, Demanda, NivelAmenaza, VinculoOpositor)
+                // 2. Cargar Actores (Columnas esperadas: Organizacion, Categoria, Demanda, NivelAmenaza, VinculoOpositor)
                 if(SHEETS_URLS.actores) {
                     const data = await fetchCSV(SHEETS_URLS.actores);
                     if(data && data.length > 0) {
                         db.actores = data.filter(r => r.Organizacion).map(r => ({ 
                             org: r.Organizacion, 
+                            categoria: r.Categoria || 'Actor Social',
                             demanda: r.Demanda || 'Sin demanda clara', 
                             amenaza: r.NivelAmenaza || 'Baja', 
                             vinculo: r.VinculoOpositor || 'Ninguno detectado' 
@@ -558,16 +596,25 @@
             
             document.getElementById('kpi-tasa-perdida').innerText = `+$${Math.round(lossPerSecond)} / seg`;
 
-            // 2. Tabla Actores
-            const tbody = document.getElementById('tabla-actores');
-            tbody.innerHTML = db.actores.map(r => `
+            // 2. Tabla Actores (Filtrada por categoría)
+            const actoresSociales = db.actores.filter(a => a.categoria.toLowerCase().includes('social'));
+            const actoresInstitucionales = db.actores.filter(a => a.categoria.toLowerCase().includes('institucional'));
+
+            const generarFilas = (actores) => actores.map(r => `
                 <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
                     <td class="px-6 py-4 font-bold text-slate-800">${r.org}</td>
+                    <td class="px-6 py-4"><span class="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[10px] font-bold uppercase tracking-wider border border-slate-200">${r.categoria}</span></td>
                     <td class="px-6 py-4 text-slate-600">${r.demanda.replace('Ley 1720', '<span class="font-bold text-rose-600">Ley 1720</span>')}</td>
                     <td class="px-6 py-4"><span class="px-2 py-1 rounded-full text-[11px] uppercase tracking-wider font-bold border ${getAmenazaColor(r.amenaza)}">${r.amenaza}</span></td>
                     <td class="px-6 py-4 text-slate-500">${r.vinculo}</td>
                 </tr>
             `).join('');
+
+            const tbodySociales = document.getElementById('tabla-actores-sociales');
+            const tbodyInstitucionales = document.getElementById('tabla-actores-institucionales');
+
+            if(tbodySociales) tbodySociales.innerHTML = generarFilas(actoresSociales) || '<tr><td colspan="5" class="px-6 py-4 text-center text-slate-500">No hay actores sociales registrados.</td></tr>';
+            if(tbodyInstitucionales) tbodyInstitucionales.innerHTML = generarFilas(actoresInstitucionales) || '<tr><td colspan="5" class="px-6 py-4 text-center text-slate-500">No hay actores institucionales registrados.</td></tr>';
 
             // 3. Estrategia (Termómetro)
             const estContainer = document.getElementById('estrategia-fases');
