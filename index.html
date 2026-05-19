@@ -760,7 +760,9 @@
         // ==========================================
         function initMap() {
             const mapContainer = document.getElementById('mapa-bolivia');
-            if(!mapContainer) return;
+            
+            // FIX: Evita el error "IndexSizeError" si el contenedor está oculto (display: none)
+            if(!mapContainer || mapContainer.clientWidth === 0 || mapContainer.clientHeight === 0) return;
 
             // Si el mapa no existe, inicializar
             if(!mapInstance) {
@@ -814,6 +816,7 @@
             if(id === 'resumen') {
                 setTimeout(() => {
                     if(mapInstance) mapInstance.invalidateSize();
+                    initMap(); // Asegurar actualización si los datos se sincronizaron estando en otra pestaña
                 }, 100); 
             }
         }
