@@ -96,18 +96,18 @@
         <!-- Navigation -->
         <nav class="bg-white shadow-sm sticky top-0 z-50 border-b border-slate-200">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <div class="flex items-center">
+                <div class="flex flex-col md:flex-row md:justify-between md:h-16">
+                    <div class="flex items-center h-14 md:h-16 shrink-0">
                         <div class="flex items-center gap-3">
                             <div class="w-2 h-2 bg-rose-600 rounded-full pulse-dot"></div>
-                            <span class="text-xl font-extrabold text-slate-800 tracking-tight">SALA DE SITUACIÓN <span class="text-rose-600 font-light">| Bolivia '26</span></span>
+                            <span class="text-lg md:text-xl font-extrabold text-slate-800 tracking-tight">SALA DE SITUACIÓN <span class="text-rose-600 font-light">| Bolivia '26</span></span>
                         </div>
                     </div>
-                    <div class="hidden md:flex items-center space-x-6 overflow-x-auto hide-scroll">
-                        <button onclick="nav('resumen')" id="btn-resumen" class="nav-button active py-5 text-sm font-medium text-slate-600 hover:text-rose-600 flex items-center gap-2 whitespace-nowrap">Panel Principal</button>
-                        <button onclick="nav('actores')" id="btn-actores" class="nav-button py-5 text-sm font-medium text-slate-600 hover:text-rose-600 flex items-center gap-2 whitespace-nowrap">Actores y Demandas</button>
-                        <button onclick="nav('economia')" id="btn-economia" class="nav-button py-5 text-sm font-medium text-slate-600 hover:text-rose-600 flex items-center gap-2 whitespace-nowrap">Impacto Económico</button>
-                        <button onclick="nav('estrategia')" id="btn-estrategia" class="nav-button py-5 text-sm font-medium text-slate-600 hover:text-rose-600 flex items-center gap-2 whitespace-nowrap">Análisis Estratégico</button>
+                    <div class="flex items-center space-x-6 overflow-x-auto hide-scroll w-full md:w-auto pb-2 md:pb-0">
+                        <button onclick="nav('resumen')" id="btn-resumen" class="nav-button active py-2 md:py-5 text-sm font-medium text-slate-600 hover:text-rose-600 flex items-center gap-2 whitespace-nowrap">Panel Principal</button>
+                        <button onclick="nav('actores')" id="btn-actores" class="nav-button py-2 md:py-5 text-sm font-medium text-slate-600 hover:text-rose-600 flex items-center gap-2 whitespace-nowrap">Actores y Demandas</button>
+                        <button onclick="nav('economia')" id="btn-economia" class="nav-button py-2 md:py-5 text-sm font-medium text-slate-600 hover:text-rose-600 flex items-center gap-2 whitespace-nowrap">Impacto Económico</button>
+                        <button onclick="nav('estrategia')" id="btn-estrategia" class="nav-button py-2 md:py-5 text-sm font-medium text-slate-600 hover:text-rose-600 flex items-center gap-2 whitespace-nowrap">Análisis Estratégico</button>
                     </div>
                 </div>
             </div>
