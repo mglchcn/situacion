@@ -58,11 +58,11 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-600 uppercase mb-1">ID de Usuario</label>
-                        <input type="text" id="username" class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none transition" placeholder="Ingrese su usuario" autocomplete="off">
+                        <input type="text" id="username" class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none transition" placeholder="Ingrese: inteligencia" autocomplete="off">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Clave de Acceso</label>
-                        <input type="password" id="password" class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none transition" placeholder="••••••••">
+                        <input type="password" id="password" class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none transition" placeholder="Ingrese: paz2026">
                     </div>
                 </div>
                 <div id="login-error" class="hidden mt-4 text-xs font-bold text-rose-600 bg-rose-50 p-3 rounded border border-rose-200 text-center">
@@ -103,11 +103,11 @@
                             <span class="text-xl font-extrabold text-slate-800 tracking-tight">SALA DE SITUACIÓN <span class="text-rose-600 font-light">| Bolivia '26</span></span>
                         </div>
                     </div>
-                    <div class="hidden md:flex items-center space-x-6">
-                        <button onclick="nav('resumen')" id="btn-resumen" class="nav-button active py-5 text-sm font-medium text-slate-600 hover:text-rose-600 flex items-center gap-2">Panel Principal</button>
-                        <button onclick="nav('actores')" id="btn-actores" class="nav-button py-5 text-sm font-medium text-slate-600 hover:text-rose-600 flex items-center gap-2">Actores y Demandas</button>
-                        <button onclick="nav('economia')" id="btn-economia" class="nav-button py-5 text-sm font-medium text-slate-600 hover:text-rose-600 flex items-center gap-2">Impacto Económico</button>
-                        <button onclick="nav('estrategia')" id="btn-estrategia" class="nav-button py-5 text-sm font-medium text-slate-600 hover:text-rose-600 flex items-center gap-2">Análisis Estratégico</button>
+                    <div class="hidden md:flex items-center space-x-6 overflow-x-auto hide-scroll">
+                        <button onclick="nav('resumen')" id="btn-resumen" class="nav-button active py-5 text-sm font-medium text-slate-600 hover:text-rose-600 flex items-center gap-2 whitespace-nowrap">Panel Principal</button>
+                        <button onclick="nav('actores')" id="btn-actores" class="nav-button py-5 text-sm font-medium text-slate-600 hover:text-rose-600 flex items-center gap-2 whitespace-nowrap">Actores y Demandas</button>
+                        <button onclick="nav('economia')" id="btn-economia" class="nav-button py-5 text-sm font-medium text-slate-600 hover:text-rose-600 flex items-center gap-2 whitespace-nowrap">Impacto Económico</button>
+                        <button onclick="nav('estrategia')" id="btn-estrategia" class="nav-button py-5 text-sm font-medium text-slate-600 hover:text-rose-600 flex items-center gap-2 whitespace-nowrap">Análisis Estratégico</button>
                     </div>
                 </div>
             </div>
@@ -115,20 +115,21 @@
 
         <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
             
-            <header class="mb-8 flex flex-col md:flex-row md:items-end justify-between border-b border-slate-200 pb-6">
+            <header class="mb-8 flex flex-col md:flex-row md:items-end justify-between border-b border-slate-200 pb-6 gap-6">
                 <div class="max-w-2xl">
-                    <div class="flex items-center gap-3 mb-2">
-                        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Radiografía de Marchas y Bloqueos</h1>
+                    <div class="flex flex-wrap items-center gap-3 mb-2">
+                        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Radiografía de Conflictividad</h1>
                         <span id="sync-status" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
                             <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Modo Local
                         </span>
                         <button onclick="syncAllData()" class="text-xs font-bold text-slate-400 hover:text-rose-600 underline flex items-center gap-1 transition">
-                            Sincronizar Datos
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            Forzar Sync
                         </button>
                     </div>
-                    <p class="text-slate-500 text-md leading-relaxed">Monitor estratégico de la coyuntura de conflictividad bajo la administración del Presidente Rodrigo Paz. Identificación de tácticas de desgaste y estrangulamiento económico.</p>
+                    <p class="text-slate-500 text-sm sm:text-base leading-relaxed">Monitor estratégico de la coyuntura bajo la administración del Presidente Rodrigo Paz. Identificación de tácticas de desgaste y estrangulamiento económico.</p>
                 </div>
-                <div class="mt-6 md:mt-0 bg-white border border-rose-100 rounded-xl p-4 shadow-sm flex flex-col items-end min-w-[280px]">
+                <div class="bg-white border border-rose-100 rounded-xl p-4 shadow-sm flex flex-col sm:items-end w-full sm:w-auto min-w-[280px]">
                     <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1 flex items-center gap-2">
                         <span class="relative flex h-2 w-2">
                           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
@@ -136,12 +137,12 @@
                         </span>
                         Pérdida Nacional Acumulada
                     </p>
-                    <p id="header-live-loss" class="text-4xl font-black text-rose-600 font-mono-numbers tracking-tighter glow-text-red">$0</p>
+                    <p id="header-live-loss" class="text-3xl sm:text-4xl font-black text-rose-600 font-mono-numbers tracking-tighter glow-text-red">$0</p>
                 </div>
             </header>
 
             <section id="sec-resumen" class="section-content active">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                     <!-- Card 1: Puntos Bloqueo -->
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col relative overflow-hidden">
                         <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Puntos de Bloqueo Activos</h3>
@@ -156,7 +157,7 @@
                     <div class="bg-slate-900 rounded-2xl shadow-lg border border-slate-800 p-6 flex flex-col relative overflow-hidden">
                         <div class="absolute inset-0 bg-gradient-to-br from-rose-900/20 to-transparent"></div>
                         <h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2 z-10">Tasa de Sangría Económica</h3>
-                        <p id="card-live-loss" class="text-4xl font-black text-white font-mono-numbers tracking-tighter z-10 mb-1">$0</p>
+                        <p id="card-live-loss" class="text-3xl sm:text-4xl font-black text-white font-mono-numbers tracking-tighter z-10 mb-1">$0</p>
                         <div class="flex items-center gap-2 mt-auto z-10">
                             <div class="w-full bg-slate-800 rounded-full h-1.5">
                                 <div class="bg-rose-500 h-1.5 rounded-full animate-[pulse_2s_ease-in-out_infinite]" style="width: 100%"></div>
@@ -168,8 +169,8 @@
                     <!-- Card 3: Costo Logístico -->
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col relative overflow-hidden">
                         <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Costo Logístico Inyectado</h3>
-                        <p id="card-live-cost" class="text-4xl font-black text-slate-700 font-mono-numbers tracking-tighter mb-1">$0</p>
-                        <p class="text-sm text-slate-500 mt-auto">Financiamiento diario estimado para sostener carpas y viáticos.</p>
+                        <p id="card-live-cost" class="text-3xl sm:text-4xl font-black text-slate-700 font-mono-numbers tracking-tighter mb-1">$0</p>
+                        <p class="text-sm text-slate-500 mt-auto">Financiamiento diario estimado para sostener carpas y viáticos de choque.</p>
                     </div>
                 </div>
             </section>
@@ -197,52 +198,52 @@
                 <div class="mb-6"><h2 class="text-2xl font-bold text-slate-800">Daño a la Cadena Productiva y Logística</h2></div>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[400px]">
-                        <h3 class="text-sm font-bold text-slate-800 mb-1 uppercase">Evolución de Pérdidas</h3>
-                        <div class="chart-container flex-grow"><canvas id="chartPerdidas"></canvas></div>
+                        <h3 class="text-sm font-bold text-slate-800 mb-1 uppercase">Evolución de Pérdidas (Millones $)</h3>
+                        <div class="chart-container flex-grow relative"><canvas id="chartPerdidas"></canvas></div>
                     </div>
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[400px]">
-                        <h3 class="text-sm font-bold text-slate-800 mb-1 uppercase">Impacto Sectorial</h3>
-                        <div class="chart-container flex-grow"><canvas id="chartSectores"></canvas></div>
+                        <h3 class="text-sm font-bold text-slate-800 mb-1 uppercase">Impacto Sectorial (%)</h3>
+                        <div class="chart-container flex-grow relative"><canvas id="chartSectores"></canvas></div>
                     </div>
                 </div>
             </section>
 
             <section id="sec-estrategia" class="section-content">
                 <div class="mb-6"><h2 class="text-2xl font-bold text-slate-800">Arquitectura de la Desestabilización</h2></div>
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     <!-- Termómetro (Dinámico) -->
-                    <div class="col-span-1 md:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="col-span-1 lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <div class="flex items-center gap-3 mb-6">
                             <div class="p-2 bg-rose-100 text-rose-600 rounded-lg">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
                             </div>
-                            <h3 class="text-lg font-bold text-slate-800">Termómetro del "Golpe Blando"</h3>
+                            <h3 class="text-lg font-bold text-slate-800">Termómetro del Conflicto</h3>
                         </div>
                         <div id="estrategia-fases" class="relative border-l-2 border-slate-200 ml-3 space-y-8 pb-4">
                             <!-- JS Injected Phases -->
                         </div>
                     </div>
 
-                    <div class="col-span-1 md:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="col-span-1 lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
                         <div class="flex items-center gap-3 mb-6">
                             <div class="p-2 bg-slate-100 text-slate-600 rounded-lg">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             </div>
                             <h3 class="text-lg font-bold text-slate-800">Patrón Histórico</h3>
                         </div>
-                        <p class="text-sm text-slate-600 mb-5">El manual operativo es una calca táctica de crisis anteriores (estrategia de cerco).</p>
+                        <p class="text-sm text-slate-600 mb-5">El manual operativo actual refleja una calca táctica de crisis de desestabilización anteriores (estrategia de cerco urbano).</p>
                         <div class="space-y-4">
                             <div class="p-4 bg-slate-50 rounded-xl border-l-4 border-slate-400">
                                 <h4 class="font-bold text-slate-700 text-sm">2003: Guerra del Gas</h4>
-                                <p class="text-xs text-slate-500">Corte de vías. Desabastecimiento para caos urbano.</p>
+                                <p class="text-xs text-slate-500 mt-1">Corte de vías troncales. Desabastecimiento inducido para generar caos urbano.</p>
                             </div>
                             <div class="p-4 bg-slate-50 rounded-xl border-l-4 border-slate-600">
                                 <h4 class="font-bold text-slate-700 text-sm">2019: Crisis Post-Electoral</h4>
-                                <p class="text-xs text-slate-500">Bloqueo de plantas de hidrocarburos e insumos vitales.</p>
+                                <p class="text-xs text-slate-500 mt-1">Bloqueo de plantas de hidrocarburos e insumos vitales. Grupos de choque.</p>
                             </div>
                             <div class="p-4 bg-rose-50 rounded-xl border-l-4 border-rose-600 shadow-sm">
                                 <h4 class="font-bold text-rose-800 text-sm">2026: Crisis Actual</h4>
-                                <p class="text-xs text-rose-700">Estrangulamiento del eje troncal para colapso logístico y renuncia.</p>
+                                <p class="text-xs text-rose-700 mt-1">Estrangulamiento del eje troncal para provocar un colapso logístico y exigir acortamiento de mandato.</p>
                             </div>
                         </div>
                     </div>
@@ -257,12 +258,13 @@
         // ==========================================
         function attemptLogin(e) {
             e.preventDefault();
-            const u = document.getElementById('username').value;
+            const u = document.getElementById('username').value.trim().toLowerCase();
             const p = document.getElementById('password').value;
             
             if(u === 'inteligencia' && p === 'paz2026') {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('dashboard-container').classList.remove('hidden');
+                document.getElementById('dashboard-container').classList.add('flex');
                 initApp(); // Arranca el dashboard
             } else {
                 const err = document.getElementById('login-error');
@@ -273,14 +275,13 @@
 
         // ==========================================
         // 🔗 CONEXIONES GOOGLE SHEETS (CSVs)
-        // Reemplaza estas URLs con las tuyas publicadas en CSV
         // ==========================================
         const SHEETS_URLS = {
-            actores: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSD2YzzFudMo4o0wG01xQiwP-vqvbwEjsfF_rmD8qnhOodzfzhAypv2G-n0EMU591hKXK7WJZPYKlba/pub?gid=76372440&single=true&output=csv",     // URL CSV: Organizacion, Demanda, NivelAmenaza, VinculoOpositor
-            kpis: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSD2YzzFudMo4o0wG01xQiwP-vqvbwEjsfF_rmD8qnhOodzfzhAypv2G-n0EMU591hKXK7WJZPYKlba/pub?gid=0&single=true&output=csv",        // URL CSV: Indicador, Valor
-            economia_line: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSD2YzzFudMo4o0wG01xQiwP-vqvbwEjsfF_rmD8qnhOodzfzhAypv2G-n0EMU591hKXK7WJZPYKlba/pub?gid=1783191223&single=true&output=csv", // URL CSV: Fecha, Perdida
-            economia_pie: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSD2YzzFudMo4o0wG01xQiwP-vqvbwEjsfF_rmD8qnhOodzfzhAypv2G-n0EMU591hKXK7WJZPYKlba/pub?gid=1877619988&single=true&output=csv",  // URL CSV: Sector, Porcentaje
-            estrategia: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSD2YzzFudMo4o0wG01xQiwP-vqvbwEjsfF_rmD8qnhOodzfzhAypv2G-n0EMU591hKXK7WJZPYKlba/pub?gid=1349896118&single=true&output=csv"   // URL CSV: Fase, Titulo, Estado (Consolidada/Ejecucion/Latente), Descripcion
+            actores: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSD2YzzFudMo4o0wG01xQiwP-vqvbwEjsfF_rmD8qnhOodzfzhAypv2G-n0EMU591hKXK7WJZPYKlba/pub?gid=76372440&single=true&output=csv",      
+            kpis: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSD2YzzFudMo4o0wG01xQiwP-vqvbwEjsfF_rmD8qnhOodzfzhAypv2G-n0EMU591hKXK7WJZPYKlba/pub?gid=0&single=true&output=csv",        
+            economia_line: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSD2YzzFudMo4o0wG01xQiwP-vqvbwEjsfF_rmD8qnhOodzfzhAypv2G-n0EMU591hKXK7WJZPYKlba/pub?gid=1783191223&single=true&output=csv", 
+            economia_pie: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSD2YzzFudMo4o0wG01xQiwP-vqvbwEjsfF_rmD8qnhOodzfzhAypv2G-n0EMU591hKXK7WJZPYKlba/pub?gid=1877619988&single=true&output=csv",  
+            estrategia: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSD2YzzFudMo4o0wG01xQiwP-vqvbwEjsfF_rmD8qnhOodzfzhAypv2G-n0EMU591hKXK7WJZPYKlba/pub?gid=1349896118&single=true&output=csv"   
         };
 
         // ==========================================
@@ -303,46 +304,97 @@
             ]
         };
 
-        // ==========================================
-        // ⚙️ MOTOR DE SINCRONIZACIÓN Y PARSEO
-        // ==========================================
         async function fetchCSV(url) {
             if(!url) return null;
             return new Promise((resolve, reject) => {
-                Papa.parse(url, { download: true, header: true, complete: res => resolve(res.data), error: err => reject(err) });
+                Papa.parse(url, { 
+                    download: true, 
+                    header: true, 
+                    skipEmptyLines: true,
+                    complete: res => resolve(res.data), 
+                    error: err => reject(err) 
+                });
             });
         }
 
         async function syncAllData() {
             const statusBadge = document.getElementById('sync-status');
             statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-ping"></span> Sincronizando...`;
+            statusBadge.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-yellow-50 text-yellow-700 border border-yellow-200";
             
             try {
-                // Mapeo seguro con Fallback si las URLs están vacías
+                // 1. Cargar KPIs (Columnas esperadas: Indicador, Valor)
                 if(SHEETS_URLS.kpis) {
                     const data = await fetchCSV(SHEETS_URLS.kpis);
-                    // Aquí se mapearía la respuesta real del CSV a db.kpis
+                    if(data && data.length > 0) {
+                        data.forEach(row => {
+                            const ind = (row.Indicador || row.indicador || '').toLowerCase();
+                            const val = row.Valor || row.valor;
+                            if(ind.includes('punto') || ind.includes('bloqueo')) db.kpis.puntos = parseInt(val) || db.kpis.puntos;
+                            if(ind.includes('tendencia')) db.kpis.tendencia = val || db.kpis.tendencia;
+                            if(ind.includes('perdida') || ind.includes('pérdida')) db.kpis.perdidaDiaria = parseFloat(val) || db.kpis.perdidaDiaria;
+                            if(ind.includes('costo')) db.kpis.costoDiario = parseFloat(val) || db.kpis.costoDiario;
+                        });
+                    }
                 }
+
+                // 2. Cargar Actores (Columnas esperadas: Organizacion, Demanda, NivelAmenaza, VinculoOpositor)
                 if(SHEETS_URLS.actores) {
                     const data = await fetchCSV(SHEETS_URLS.actores);
-                    if(data && data.length > 0) db.actores = data.filter(r => r.Organizacion).map(r => ({ org: r.Organizacion, demanda: r.Demanda, amenaza: r.NivelAmenaza, vinculo: r.VinculoOpositor }));
+                    if(data && data.length > 0) {
+                        db.actores = data.filter(r => r.Organizacion).map(r => ({ 
+                            org: r.Organizacion, 
+                            demanda: r.Demanda || 'Sin demanda clara', 
+                            amenaza: r.NivelAmenaza || 'Baja', 
+                            vinculo: r.VinculoOpositor || 'Ninguno detectado' 
+                        }));
+                    }
                 }
-                // (Lo mismo para el resto de gráficas y estrategia)
+
+                // 3. Cargar Gráfico Línea (Columnas esperadas: Fecha, Perdida)
+                if(SHEETS_URLS.economia_line) {
+                    const data = await fetchCSV(SHEETS_URLS.economia_line);
+                    if(data && data.length > 0) {
+                        db.ecoLine.labels = data.map(r => r.Fecha).filter(Boolean);
+                        db.ecoLine.data = data.map(r => parseFloat(r.Perdida || r.perdida)).filter(n => !isNaN(n));
+                    }
+                }
+
+                // 4. Cargar Gráfico Pastel (Columnas esperadas: Sector, Porcentaje)
+                if(SHEETS_URLS.economia_pie) {
+                    const data = await fetchCSV(SHEETS_URLS.economia_pie);
+                    if(data && data.length > 0) {
+                        db.ecoPie.labels = data.map(r => r.Sector).filter(Boolean);
+                        db.ecoPie.data = data.map(r => parseFloat(r.Porcentaje || r.porcentaje)).filter(n => !isNaN(n));
+                    }
+                }
+
+                // 5. Cargar Estrategia (Columnas esperadas: Fase, Titulo, Estado, Descripcion)
+                if(SHEETS_URLS.estrategia) {
+                    const data = await fetchCSV(SHEETS_URLS.estrategia);
+                    if(data && data.length > 0) {
+                        db.estrategia = data.filter(r => r.Fase).map(r => ({
+                            fase: r.Fase,
+                            titulo: r.Titulo || 'Fase Desconocida',
+                            estado: r.Estado || 'Latente',
+                            desc: r.Descripcion || r.descripcion || ''
+                        }));
+                    }
+                }
                 
-                statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> BD Conectada`;
+                // Éxito
+                statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Modo en Vivo`;
                 statusBadge.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200";
             } catch (error) {
-                console.error("Error Sync:", error);
-                statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Error Sync`;
-                statusBadge.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-red-50 text-red-700 border border-red-200";
+                console.error("Error Sync: No se pudieron extraer datos del CSV.", error);
+                statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Usando Fallback`;
+                statusBadge.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200";
             }
 
+            // Repintar UI con los datos nuevos (o con fallback si falló)
             renderAll();
         }
 
-        // ==========================================
-        // 🎨 RENDERIZADO DE INTERFAZ (UI)
-        // ==========================================
         function getAmenazaColor(nivel) {
             const n = (nivel || '').toLowerCase();
             if(n.includes('crítica') || n.includes('alta')) return "bg-red-100 text-red-700 border-red-200";
@@ -354,17 +406,20 @@
             // 1. KPIs
             document.getElementById('kpi-puntos').innerText = db.kpis.puntos;
             document.getElementById('kpi-tendencia').innerText = db.kpis.tendencia;
+            
+            // Calculo de pérdida y costo por segundo (24 hrs = 86400 segs)
             lossPerSecond = db.kpis.perdidaDiaria / 86400;
             costPerSecond = db.kpis.costoDiario / 86400;
+            
             document.getElementById('kpi-tasa-perdida').innerText = `+$${Math.round(lossPerSecond)} / seg`;
 
-            // 2. Actores
+            // 2. Tabla Actores
             const tbody = document.getElementById('tabla-actores');
             tbody.innerHTML = db.actores.map(r => `
-                <tr class="border-b border-slate-100">
+                <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
                     <td class="px-6 py-4 font-bold text-slate-800">${r.org}</td>
                     <td class="px-6 py-4 text-slate-600">${r.demanda.replace('Ley 1720', '<span class="font-bold text-rose-600">Ley 1720</span>')}</td>
-                    <td class="px-6 py-4"><span class="px-2 py-1 rounded-full text-xs font-bold border ${getAmenazaColor(r.amenaza)}">${r.amenaza}</span></td>
+                    <td class="px-6 py-4"><span class="px-2 py-1 rounded-full text-[11px] uppercase tracking-wider font-bold border ${getAmenazaColor(r.amenaza)}">${r.amenaza}</span></td>
                     <td class="px-6 py-4 text-slate-500">${r.vinculo}</td>
                 </tr>
             `).join('');
@@ -372,15 +427,16 @@
             // 3. Estrategia (Termómetro)
             const estContainer = document.getElementById('estrategia-fases');
             estContainer.innerHTML = db.estrategia.map(f => {
-                let colorBase = f.estado === 'Consolidada' ? 'slate' : (f.estado === 'Ejecucion' ? 'rose' : 'red');
-                let dotClass = f.estado === 'Ejecucion' ? 'bg-rose-500 pulse-dot' : `bg-${colorBase}-500`;
-                let boxClass = f.estado === 'Ejecucion' ? 'bg-rose-50 p-4 rounded-r-xl border border-rose-100 -ml-2' : '';
-                let badge = f.estado === 'Ejecucion' ? `<span class="bg-rose-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">En Ejecución</span>` : '';
+                const estado = (f.estado || '').toLowerCase();
+                let colorBase = estado.includes('consolidada') ? 'slate' : (estado.includes('ejecucion') || estado.includes('ejecución') ? 'rose' : 'red');
+                let dotClass = estado.includes('ejecucion') || estado.includes('ejecución') ? 'bg-rose-500 pulse-dot' : `bg-${colorBase}-500`;
+                let boxClass = estado.includes('ejecucion') || estado.includes('ejecución') ? 'bg-rose-50 p-4 rounded-r-xl border border-rose-100 -ml-2' : '';
+                let badge = estado.includes('ejecucion') || estado.includes('ejecución') ? `<span class="bg-rose-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">En Ejecución</span>` : '';
                 
                 return `
                 <div class="relative pl-6 ${boxClass}">
                     <div class="absolute w-4 h-4 rounded-full -left-[9px] top-1 border-4 border-white ${dotClass}"></div>
-                    <div class="flex justify-between items-center mb-1">
+                    <div class="flex flex-wrap justify-between items-center mb-1 gap-2">
                         <h4 class="font-bold text-${colorBase}-800 text-sm">${f.fase}: ${f.titulo}</h4>
                         ${badge}
                     </div>
@@ -388,50 +444,92 @@
                 </div>`;
             }).join('');
 
-            // 4. Gráficas
+            // 4. Inicializar/Refrescar Gráficas
             initCharts();
         }
 
-        // ==========================================
-        // 📊 GRÁFICOS Y TIEMPO REAL
-        // ==========================================
         let chartInstances = {};
+        // Fecha simulada de inicio del conflicto para el contador continuo
         const startOfCrisis = new Date('2026-05-01T00:00:00').getTime();
         let lossPerSecond = 0;
         let costPerSecond = 0;
+        let isCounterRunning = false;
 
         function updateRealTimeCounters() {
+            // Genera la ilusión de un contador que sube por segundo
             const simulatedNow = Math.max(new Date().getTime(), new Date('2026-05-14T09:00:00').getTime()); 
             const elapsed = (simulatedNow - startOfCrisis) / 1000;
             
             const formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
             
-            document.getElementById('header-live-loss').innerText = formatter.format(elapsed * lossPerSecond);
-            if(document.getElementById('card-live-loss')) document.getElementById('card-live-loss').innerText = formatter.format(elapsed * lossPerSecond);
-            if(document.getElementById('card-live-cost')) document.getElementById('card-live-cost').innerText = formatter.format(elapsed * costPerSecond);
+            const liveLoss = formatter.format(elapsed * lossPerSecond);
+            const liveCost = formatter.format(elapsed * costPerSecond);
+
+            document.getElementById('header-live-loss').innerText = liveLoss;
+            if(document.getElementById('card-live-loss')) document.getElementById('card-live-loss').innerText = liveLoss;
+            if(document.getElementById('card-live-cost')) document.getElementById('card-live-cost').innerText = liveCost;
             
             requestAnimationFrame(updateRealTimeCounters);
         }
 
         function initCharts() {
-            Chart.defaults.color = '#64748b'; Chart.defaults.font.family = "'Inter', sans-serif";
-            Object.values(chartInstances).forEach(i => i.destroy());
+            Chart.defaults.color = '#64748b'; 
+            Chart.defaults.font.family = "'Inter', sans-serif";
+            
+            // Destruir instancias previas antes de volver a dibujar (importante tras el sync)
+            Object.values(chartInstances).forEach(i => {
+                if (i) i.destroy();
+            });
 
             const ctxP = document.getElementById('chartPerdidas');
-            if(ctxP) {
+            if(ctxP && db.ecoLine.labels.length > 0) {
                 chartInstances.p = new Chart(ctxP, {
                     type: 'line',
-                    data: { labels: db.ecoLine.labels, datasets: [{ data: db.ecoLine.data, borderColor: '#E11D48', backgroundColor: 'rgba(225, 29, 72, 0.1)', borderWidth: 3, fill: true, tension: 0.4 }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } }
+                    data: { 
+                        labels: db.ecoLine.labels, 
+                        datasets: [{ 
+                            label: 'Pérdida Económica (Millones USD)',
+                            data: db.ecoLine.data, 
+                            borderColor: '#E11D48', 
+                            backgroundColor: 'rgba(225, 29, 72, 0.1)', 
+                            borderWidth: 3, 
+                            fill: true, 
+                            tension: 0.4,
+                            pointBackgroundColor: '#E11D48',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: '#E11D48',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }] 
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }, 
+                        scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } 
+                    }
                 });
             }
 
             const ctxS = document.getElementById('chartSectores');
-            if(ctxS) {
+            if(ctxS && db.ecoPie.labels.length > 0) {
                 chartInstances.s = new Chart(ctxS, {
                     type: 'doughnut',
-                    data: { labels: db.ecoPie.labels, datasets: [{ data: db.ecoPie.data, backgroundColor: ['#9F1239', '#E11D48', '#FB7185', '#334155'] }] },
-                    options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'right' } } }
+                    data: { 
+                        labels: db.ecoPie.labels, 
+                        datasets: [{ 
+                            data: db.ecoPie.data, 
+                            backgroundColor: ['#9F1239', '#E11D48', '#FB7185', '#334155'],
+                            borderWidth: 0
+                        }] 
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        cutout: '70%', 
+                        plugins: { legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true } } } 
+                    }
                 });
             }
         }
@@ -441,13 +539,30 @@
             document.querySelectorAll('.nav-button').forEach(el => el.classList.remove('active'));
             document.getElementById('sec-' + id).classList.add('active');
             document.getElementById('btn-' + id).classList.add('active');
-            if(id === 'economia') setTimeout(initCharts, 50); 
+            
+            // Dar un poco de tiempo para que la pestaña sea visible antes de (re)dibujar los gráficos
+            if(id === 'economia') {
+                setTimeout(() => {
+                    initCharts();
+                }, 100); 
+            }
         }
 
         function initApp() {
-            syncAllData();
-            updateRealTimeCounters();
-            window.addEventListener('resize', () => { if(document.getElementById('sec-economia').classList.contains('active')) initCharts(); });
+            syncAllData(); // Llamada inicial para parsear CSVs
+            
+            // Iniciar contador en tiempo real solo una vez
+            if(!isCounterRunning) {
+                updateRealTimeCounters();
+                isCounterRunning = true;
+            }
+
+            // Asegurar que las gráficas se redimensionen correctamente si el usuario cambia el tamaño de la ventana
+            window.addEventListener('resize', () => { 
+                if(document.getElementById('sec-economia').classList.contains('active')) {
+                    initCharts();
+                }
+            });
         }
     </script>
 </body>
