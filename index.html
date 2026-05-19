@@ -320,8 +320,8 @@
             economia_line: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSD2YzzFudMo4o0wG01xQiwP-vqvbwEjsfF_rmD8qnhOodzfzhAypv2G-n0EMU591hKXK7WJZPYKlba/pub?gid=1783191223&single=true&output=csv", 
             economia_pie: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSD2YzzFudMo4o0wG01xQiwP-vqvbwEjsfF_rmD8qnhOodzfzhAypv2G-n0EMU591hKXK7WJZPYKlba/pub?gid=1877619988&single=true&output=csv",  
             estrategia: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSD2YzzFudMo4o0wG01xQiwP-vqvbwEjsfF_rmD8qnhOodzfzhAypv2G-n0EMU591hKXK7WJZPYKlba/pub?gid=1349896118&single=true&output=csv",
-            // NUEVO: Pega aquí la URL de tu CSV publicado para el mapa. 
-            // Debe tener las columnas: Latitud, Longitud, Intensidad, Ubicacion, Descripcion
+            // NUEVO: Ahora solo necesitas la columna "Ubicacion" (ej. "Santa Cruz", "Suticollo"). 
+            // Las columnas de Latitud y Longitud pasan a ser opcionales.
             mapa: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSD2YzzFudMo4o0wG01xQiwP-vqvbwEjsfF_rmD8qnhOodzfzhAypv2G-n0EMU591hKXK7WJZPYKlba/pub?gid=957356972&single=true&output=csv"    
         };
 
@@ -356,6 +356,55 @@
                 { lat: -19.5836, lng: -65.7531, peso: 0.4, ubicacion: "Potosí", desc: "Asamblea de mineros cooperativistas evaluando sumarse a medidas de presión." }
             ]
         };
+
+        // ==========================================
+        // 🌍 MOTOR DE GEOCODIFICACIÓN (Texto a Coordenadas)
+        // ==========================================
+        // Caché local rápida para ciudades y zonas troncales de Bolivia
+        const geoCache = {
+            "la paz": {lat: -16.5000, lng: -68.1193},
+            "el alto": {lat: -16.5167, lng: -68.1667},
+            "senkata": {lat: -16.5667, lng: -68.1667},
+            "santa cruz": {lat: -17.7833, lng: -63.1821},
+            "plan 3000": {lat: -17.8333, lng: -63.1500},
+            "yapacani": {lat: -17.3995, lng: -63.8875},
+            "cochabamba": {lat: -17.3935, lng: -66.1570},
+            "suticollo": {lat: -17.4333, lng: -66.3667},
+            "vinto": {lat: -17.3970, lng: -66.3150},
+            "tropico": {lat: -17.0000, lng: -65.5000},
+            "oruro": {lat: -17.9833, lng: -67.1500},
+            "potosi": {lat: -19.5836, lng: -65.7531},
+            "sucre": {lat: -19.0333, lng: -65.2627},
+            "tarija": {lat: -21.5355, lng: -64.7296},
+            "beni": {lat: -14.8333, lng: -64.9000},
+            "pando": {lat: -11.0333, lng: -68.7667}
+        };
+
+        async function getCoordinates(ubicacion) {
+            if (!ubicacion) return null;
+            const cleanName = ubicacion.toLowerCase().trim();
+            
+            // 1. Búsqueda ultra-rápida en caché local
+            for (const key in geoCache) {
+                if (cleanName.includes(key)) return geoCache[key];
+            }
+
+            // 2. Búsqueda en API gratuita de OpenStreetMap (Nominatim)
+            try {
+                // Pausa de 1 seg para no saturar la API gratuita (Regla de uso de Nominatim)
+                await new Promise(r => setTimeout(r, 1000)); 
+                const query = encodeURIComponent(ubicacion + ', Bolivia');
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+                const data = await res.json();
+                
+                if (data && data.length > 0) {
+                    return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+                }
+            } catch (e) {
+                console.warn("Geocodificación fallida para: ", ubicacion);
+            }
+            return null; // Retorna nulo si no encuentra nada
+        }
 
         async function fetchCSV(url) {
             if(!url) return null;
@@ -435,21 +484,50 @@
                     }
                 }
 
-                // 6. Cargar Mapa (Columnas esperadas: Latitud, Longitud, Intensidad, Ubicacion, Descripcion)
+                // 6. Cargar Mapa Inteligente (Geocodificador)
                 if(SHEETS_URLS.mapa) {
                     const data = await fetchCSV(SHEETS_URLS.mapa);
                     if(data && data.length > 0) {
-                        db.mapa = data.filter(r => r.Latitud && r.Longitud).map(r => ({
-                            lat: parseFloat(r.Latitud.replace(',','.')),
-                            lng: parseFloat(r.Longitud.replace(',','.')),
-                            peso: parseFloat(r.Intensidad || r.Peso || 0.5),
-                            ubicacion: r.Ubicacion || r.Lugar || 'Punto de Conflicto',
-                            desc: r.Descripcion || r.Detalle || 'Sin detalles registrados.'
-                        }));
+                        let newMapData = [];
+                        
+                        for(let r of data) {
+                            const ubicacion = r.Ubicacion || r.Lugar;
+                            if(!ubicacion) continue; // Si no hay nombre de lugar, ignorar fila
+
+                            // Intenta leer Lat/Lng si el usuario de todos modos las puso manualmente
+                            let lat = parseFloat(r.Latitud ? String(r.Latitud).replace(',','.') : 'NaN');
+                            let lng = parseFloat(r.Longitud ? String(r.Longitud).replace(',','.') : 'NaN');
+                            
+                            // Si NO hay coordenadas manuales, convertir el TEXTO en COORDENADAS
+                            if(isNaN(lat) || isNaN(lng)) {
+                                // Muestra animación en el botón superior indicando qué está buscando
+                                statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping"></span> Ubicando: ${ubicacion.substring(0,10)}...`;
+                                statusBadge.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200";
+                                
+                                const coords = await getCoordinates(ubicacion);
+                                if(coords) {
+                                    lat = coords.lat;
+                                    lng = coords.lng;
+                                }
+                            }
+
+                            // Si logró ubicarlo (ya sea manual o por API automatica), lo agrega al mapa
+                            if(!isNaN(lat) && !isNaN(lng)) {
+                                newMapData.push({
+                                    lat: lat,
+                                    lng: lng,
+                                    peso: parseFloat(r.Intensidad || r.Peso || 0.5),
+                                    ubicacion: ubicacion,
+                                    desc: r.Descripcion || r.Detalle || 'Sin detalles registrados.'
+                                });
+                            }
+                        }
+                        
+                        if(newMapData.length > 0) db.mapa = newMapData;
                     }
                 }
                 
-                // Éxito
+                // Éxito final
                 statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Modo en Vivo`;
                 statusBadge.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200";
             } catch (error) {
