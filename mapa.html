@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Transitabilidad en Tiempo Real</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Phosphor Icons (Íconos modernos) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; overflow: hidden; }
+        
+        #map { height: 100vh; width: 100vw; z-index: 10; }
+        
+        /* Customización premium para los popups de Leaflet */
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 0;
+        }
+        .leaflet-popup-content { margin: 0; width: 320px !important; }
+        .leaflet-container a.leaflet-popup-close-button { color: #fff; padding: 12px; z-index: 20; }
+        .leaflet-container a.leaflet-popup-close-button:hover { color: #f3f4f6; background: transparent; }
+
+        /* Estilos de los marcadores personalizados (HTML) */
+        .custom-marker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: white;
+            font-size: 16px;
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.8), 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.2s, opacity 0.3s ease;
+        }
+        .custom-marker:hover { transform: scale(1.15); z-index: 1000 !important; }
+        
+        .marker-red { background-color: #ef4444; } /* Bloqueos / No transitable */
+        .marker-orange { background-color: #f97316; } /* Precaución / Restricciones */
+        .marker-yellow { background-color: #eab308; } /* Desvíos */
+        .marker-green { background-color: #22c55e; } /* Normal */
+
+        /* Panel transitions */
+        #panel-lateral { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .panel-closed { transform: translateX(-120%); }
+
+        #panel-tabla { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .panel-tabla-closed { transform: translateX(120%); }
+
+        /* Toast notification animation */
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .toast-animate { animation: slideUp 0.4s ease-out forwards; }
+
+        /* Custom Scrollbar para el popup */
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <!-- Contenedor del Mapa -->
+    <div id="map"></div>
+
+    <!-- Panel Lateral Izquierdo (Leyenda e Información interactiva) -->
+    <div id="panel-lateral" class="absolute top-4 left-4 z-[20] w-80 bg-white/95 backdrop-blur-md shadow-xl rounded-2xl border border-slate-100 flex flex-col max-h-[90vh]">
+        
+        <!-- Header del Panel -->
+        <div class="p-5 pb-4 border-b border-slate-200 flex items-start justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-md shadow-blue-200">
+                    <i class="ph ph-map-pin-line text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold text-slate-800 leading-tight">Estado de Vías ABC</h1>
+                    <p class="text-xs text-slate-500 mt-0.5">Reporte en tiempo real</p>
+                </div>
+            </div>
+            <!-- Botón Minimizar -->
+            <button onclick="togglePanel()" class="text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 p-1.5 rounded-lg transition-colors" title="Ocultar panel">
+                <i class="ph ph-caret-left text-lg"></i>
+            </button>
+        </div>
+        
+        <!-- Cuerpo del Panel (Filtros) -->
+        <div class="p-5 overflow-y-auto custom-scroll">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Filtros de Estado</h3>
+                <button onclick="centrarMapa()" class="text-xs text-blue-600 font-medium hover:text-blue-800 flex items-center gap-1 bg-blue-50 px-2 py-1 rounded">
+                    <i class="ph ph-corners-out"></i> Ver Todo
+                </button>
+            </div>
+            
+            <ul class="space-y-2">
+                <!-- Filtro: Bloqueos (Rojo) -->
+                <li class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-100 transition-all select-none" onclick="toggleFiltro('red')">
+                    <div class="flex items-center gap-3 text-sm text-slate-700 font-medium">
+                        <div class="w-4 h-4 rounded-full bg-red-500 shadow-sm shadow-red-200 border-2 border-white"></div>
+                        No Transitable / Bloqueo
+                    </div>
+                    <i id="toggle-red" class="ph-fill ph-toggle-right text-red-500 text-2xl transition-colors"></i>
+                </li>
+                <!-- Filtro: Restricciones (Naranja) -->
+                <li class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-100 transition-all select-none" onclick="toggleFiltro('orange')">
+                    <div class="flex items-center gap-3 text-sm text-slate-700 font-medium">
+                        <div class="w-4 h-4 rounded-full bg-orange-500 shadow-sm shadow-orange-200 border-2 border-white"></div>
+                        Restricción / Precaución
+                    </div>
+                    <i id="toggle-orange" class="ph-fill ph-toggle-right text-orange-500 text-2xl transition-colors"></i>
+                </li>
+                <!-- Filtro: Desvíos (Amarillo) -->
+                <li class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-100 transition-all select-none" onclick="toggleFiltro('yellow')">
+                    <div class="flex items-center gap-3 text-sm text-slate-700 font-medium">
+                        <div class="w-4 h-4 rounded-full bg-yellow-500 shadow-sm shadow-yellow-200 border-2 border-white"></div>
+                        Transitable con Desvíos
+                    </div>
+                    <i id="toggle-yellow" class="ph-fill ph-toggle-right text-yellow-500 text-2xl transition-colors"></i>
+                </li>
+                <!-- Filtro: Normal (Verde) -->
+                <li class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-100 transition-all select-none" onclick="toggleFiltro('green')">
+                    <div class="flex items-center gap-3 text-sm text-slate-700 font-medium">
+                        <div class="w-4 h-4 rounded-full bg-green-500 shadow-sm shadow-green-200 border-2 border-white"></div>
+                        Transitable Normal
+                    </div>
+                    <i id="toggle-green" class="ph-fill ph-toggle-right text-green-500 text-2xl transition-colors"></i>
+                </li>
+            </ul>
+
+            <div id="loading-indicator" class="mt-4 flex items-center justify-center gap-2 text-sm text-blue-600 bg-blue-50 py-2.5 px-3 rounded-lg border border-blue-100">
+                <i class="ph ph-spinner-gap animate-spin text-lg"></i>
+                <span class="font-medium">Conectando con la API...</span>
+            </div>
+            
+            <div id="stats-container" class="mt-4 pt-4 border-t border-slate-100 hidden">
+                <p class="text-xs text-slate-500 text-center">Mostrando <strong id="puntos-visibles" class="text-slate-800">0</strong> puntos en el mapa</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón Restaurar Panel (Oculto por defecto) -->
+    <button id="btn-restore-panel" onclick="togglePanel()" class="absolute top-4 left-4 z-[15] w-12 h-12 bg-white/95 backdrop-blur-md shadow-xl rounded-xl border border-slate-100 flex items-center justify-center text-slate-600 hover:text-blue-600 transition-all hidden cursor-pointer" title="Mostrar Panel">
+        <i class="ph ph-list text-2xl"></i>
+    </button>
+
+    <!-- Botón Mostrar Tabla (Oculto por defecto) -->
+    <button id="btn-restore-tabla" onclick="toggleTabla()" class="absolute top-4 right-4 z-[15] bg-white/95 backdrop-blur-md shadow-xl rounded-xl border border-slate-100 flex items-center gap-2 px-4 py-3 text-slate-600 hover:text-indigo-600 transition-all cursor-pointer font-medium text-sm hidden" title="Mostrar Lista">
+        <i class="ph ph-table text-xl"></i> Ver Lista
+    </button>
+
+    <!-- Panel Lateral Derecho (Tabla de Datos) -->
+    <div id="panel-tabla" class="absolute top-4 right-4 z-[20] w-80 sm:w-96 bg-white/95 backdrop-blur-md shadow-xl rounded-2xl border border-slate-100 flex flex-col max-h-[90vh]">
+        <!-- Header del Panel -->
+        <div class="p-5 pb-4 border-b border-slate-200 flex items-center justify-between bg-white/50 rounded-t-2xl">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-200">
+                    <i class="ph ph-list-dashes text-lg"></i>
+                </div>
+                <div>
+                    <h2 class="text-sm font-bold text-slate-800 leading-tight">Lista de Eventos</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Click para ubicar en mapa</p>
+                </div>
+            </div>
+            <button onclick="toggleTabla()" class="text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 p-1.5 rounded-lg transition-colors" title="Ocultar tabla">
+                <i class="ph ph-caret-right text-lg"></i>
+            </button>
+        </div>
+        <!-- Cuerpo de la Tabla -->
+        <div class="overflow-y-auto custom-scroll flex-1 p-0">
+            <table class="w-full text-left text-xs border-collapse">
+                <thead class="bg-slate-50 sticky top-0 z-10 shadow-sm">
+                    <tr>
+                        <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Ruta / Tramo</th>
+                        <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-body" class="divide-y divide-slate-100">
+                    <!-- Filas inyectadas por JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="absolute bottom-6 left-1/2 -translate-x-1/2 z-[30] hidden toast-animate">
+        <div class="bg-slate-800/95 backdrop-blur text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 max-w-md w-max border border-slate-700">
+            <i id="toast-icon" class="ph ph-warning-circle text-xl text-yellow-400"></i>
+            <span id="toast-message" class="text-sm font-medium"></span>
+            <button onclick="document.getElementById('toast').classList.add('hidden')" class="ml-3 text-slate-400 hover:text-white">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        const ENDPOINT_API = 'https://transitabilidad.abc.gob.bo/api/v1/data';
+        
+        let datosGlobales = []; // Aquí guardaremos los datos descargados
+        let marcadoresLayer = null; // Capa de Leaflet para agrupar marcadores
+        let diccionarioMarcadores = {}; // Diccionario para vincular la tabla con los marcadores
+
+        // Estado de los filtros (Todos activos por defecto)
+        let filtrosActivos = {
+            'red': true,     // Bloqueos / No transitable
+            'orange': true,  // Restricciones / Derrumbes
+            'yellow': true,  // Desvíos
+            'green': true    // Normal
+        };
+        
+        // Inicializar mapa (Centrado general, luego se ajustará)
+        const map = L.map('map', { zoomControl: false }).setView([-16.8, -65.5], 6);
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+        // Mapa Base
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap &copy; CARTO',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Inicializar la capa de marcadores
+        marcadoresLayer = L.layerGroup().addTo(map);
+
+        function showToast(message, type = 'warning') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+            
+            toastMsg.innerText = message;
+            toast.classList.remove('hidden');
+            
+            if (type === 'error') toastIcon.className = 'ph ph-x-circle text-xl text-red-400';
+            else if (type === 'info') toastIcon.className = 'ph ph-info text-xl text-blue-400';
+            else toastIcon.className = 'ph ph-warning-circle text-xl text-yellow-400';
+
+            setTimeout(() => { toast.classList.add('hidden'); }, 6000);
+        }
+
+        function togglePanel() {
+            const panel = document.getElementById('panel-lateral');
+            const btnRestore = document.getElementById('btn-restore-panel');
+            
+            if (panel.classList.contains('panel-closed')) {
+                panel.classList.remove('panel-closed');
+                btnRestore.classList.add('hidden');
+            } else {
+                panel.classList.add('panel-closed');
+                setTimeout(() => { btnRestore.classList.remove('hidden'); }, 300);
+            }
+        }
+
+        function toggleTabla() {
+            const panel = document.getElementById('panel-tabla');
+            const btnRestore = document.getElementById('btn-restore-tabla');
+            
+            if (panel.classList.contains('panel-tabla-closed')) {
+                panel.classList.remove('panel-tabla-closed');
+                btnRestore.classList.add('hidden');
+            } else {
+                panel.classList.add('panel-tabla-closed');
+                setTimeout(() => { btnRestore.classList.remove('hidden'); }, 300);
+            }
+        }
+
+        function enfocarPunto(lat, lng, idRegistro) {
+            // Vuela al punto con un zoom más cercano
+            map.flyTo([lat, lng], 12, { duration: 1.5 });
+            
+            const marcador = diccionarioMarcadores[idRegistro];
+            if (marcador) {
+                // Abrir el popup después de un ligero retraso para acompañar la animación del mapa
+                setTimeout(() => marcador.openPopup(), 600);
+            }
+        }
+
+        function renderizarTabla(datosVisibles) {
+            const tbody = document.getElementById('tabla-body');
+            tbody.innerHTML = ''; // Limpiar contenido previo
+
+            if (datosVisibles.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="2" class="px-4 py-8 text-center text-slate-400">No hay eventos visibles con los filtros actuales.</td></tr>`;
+                return;
+            }
+
+            datosVisibles.forEach(item => {
+                const ui = getEstadoUI(item.estado.id_estado);
+                // Creamos un ID único usando las coordenadas para poder vincular la fila con el marcador
+                const uniqueId = `${item.latitud_inicio_seccion}_${item.longitud_inicio_seccion}`;
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-indigo-50 cursor-pointer transition-colors group';
+                tr.onclick = () => enfocarPunto(parseFloat(item.latitud_inicio_seccion), parseFloat(item.longitud_inicio_seccion), uniqueId);
+
+                tr.innerHTML = `
+                    <td class="px-4 py-3 align-top w-3/5">
+                        <div class="font-bold text-slate-700 group-hover:text-indigo-600 transition-colors">Ruta ${item.ruta}</div>
+                        <div class="text-[10px] text-slate-500 line-clamp-2 mt-0.5 leading-tight" title="${item.inicio_seccion} a ${item.fin_seccion}">
+                            ${item.inicio_seccion} a ${item.fin_seccion}
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 align-top w-2/5">
+                        <div class="flex items-start gap-1.5 mt-0.5">
+                            <div class="mt-1 w-2 h-2 rounded-full shadow-sm shrink-0 ${ui.bgHeader}"></div>
+                            <div class="text-[10px] font-medium text-slate-600 leading-tight">
+                                ${item.estado.descripcion_estado}
+                            </div>
+                        </div>
+                    </td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Mapear ID de estado a la categoría de color de nuestro filtro
+        function getCategoriaFiltro(idEstado) {
+            switch(idEstado) {
+                case 4: case 5: return 'red';
+                case 7: case 2: return 'orange';
+                case 3: return 'yellow';
+                default: return 'green';
+            }
+        }
+
+        // UI específica por ID
+        function getEstadoUI(idEstado) {
+            switch(idEstado) {
+                case 4: case 5: return { color: 'marker-red', bgHeader: 'bg-red-600', icon: 'ph-x-circle' };
+                case 7: case 2: return { color: 'marker-orange', bgHeader: 'bg-orange-500', icon: 'ph-warning' };
+                case 3: return { color: 'marker-yellow', bgHeader: 'bg-yellow-500', icon: 'ph-arrows-split' };
+                default: return { color: 'marker-green', bgHeader: 'bg-green-500', icon: 'ph-check-circle' };
+            }
+        }
+
+        function toggleFiltro(categoria) {
+            filtrosActivos[categoria] = !filtrosActivos[categoria];
+            
+            const icon = document.getElementById(`toggle-${categoria}`);
+            if (filtrosActivos[categoria]) {
+                icon.className = `ph-fill ph-toggle-right text-${categoria}-500 text-2xl transition-colors`;
+            } else {
+                icon.className = `ph-regular ph-toggle-left text-slate-300 text-2xl transition-colors`;
+            }
+
+            renderizarMarcadores(); // Re-dibujar mapa
+        }
+
+        function crearContenidoPopup(item) {
+            const ui = getEstadoUI(item.estado.id_estado);
+            const fechaFormateada = new Date(item.fecha_registro_hora).toLocaleString('es-BO');
+            
+            return `
+                <div class="flex flex-col w-full bg-white">
+                    <div class="${ui.bgHeader} p-4 rounded-t-xl text-white">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="px-2 py-0.5 bg-white/20 rounded text-[10px] font-bold uppercase tracking-wide">Ruta ${item.ruta}</span>
+                            <span class="text-xs opacity-80 truncate" title="${item.departamento}">${item.departamento}</span>
+                        </div>
+                        <h3 class="text-base font-bold leading-tight mb-1">${item.inicio_seccion} a ${item.fin_seccion}</h3>
+                        <p class="text-xs opacity-90 flex items-center gap-1 font-medium">
+                            <i class="ph ${ui.icon}"></i> ${item.estado.descripcion_estado}
+                        </p>
+                    </div>
+                    <div class="p-4 space-y-3">
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                                <span class="block text-slate-400 font-semibold mb-0.5">Motivo</span>
+                                <span class="text-slate-700 font-medium">${item.evento.descripcion_evento}</span>
+                            </div>
+                            <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                                <span class="block text-slate-400 font-semibold mb-0.5">Clima</span>
+                                <span class="text-slate-700 font-medium">${item.clima.descripcion_clima}</span>
+                            </div>
+                        </div>
+                        <div class="text-xs text-slate-600 bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+                            <span class="font-bold text-slate-700 mb-1 block">Reporte Oficial:</span>
+                            <div class="prose prose-sm max-w-none prose-p:my-1 prose-a:text-blue-600 max-h-24 overflow-y-auto custom-scroll">
+                                ${item.descripcion_foto1 || 'Sin descripción adicional reportada.'}
+                            </div>
+                        </div>
+                        <div class="text-[10px] text-slate-400 text-right pt-2 border-t border-slate-100">
+                            Actualizado: ${fechaFormateada}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderizarMarcadores() {
+            marcadoresLayer.clearLayers(); // Limpiar mapa
+            diccionarioMarcadores = {}; // Limpiar referencias de la tabla
+            const limitesMapa = L.latLngBounds(); // Objeto para calcular el encuadre (Bounds)
+            let puntosVisibles = 0;
+            let datosVisibles = []; // Para alimentar la tabla
+
+            datosGlobales.forEach(item => {
+                if (item.latitud_inicio_seccion && item.longitud_inicio_seccion) {
+                    const categoria = getCategoriaFiltro(item.estado.id_estado);
+                    
+                    // Si el filtro para esta categoría está activo, lo dibujamos
+                    if (filtrosActivos[categoria]) {
+                        const lat = parseFloat(item.latitud_inicio_seccion);
+                        const lng = parseFloat(item.longitud_inicio_seccion);
+                        const ui = getEstadoUI(item.estado.id_estado);
+
+                        const customIcon = L.divIcon({
+                            className: 'bg-transparent',
+                            html: `<div class="custom-marker ${ui.color} w-8 h-8"><i class="ph ${ui.icon}"></i></div>`,
+                            iconSize: [32, 32],
+                            iconAnchor: [16, 16],
+                            popupAnchor: [0, -16]
+                        });
+
+                        const marker = L.marker([lat, lng], { icon: customIcon }).bindPopup(crearContenidoPopup(item));
+                        marcadoresLayer.addLayer(marker);
+                        
+                        // Guardar referencia en el diccionario para la acción de clic en la tabla
+                        const uniqueId = `${item.latitud_inicio_seccion}_${item.longitud_inicio_seccion}`;
+                        diccionarioMarcadores[uniqueId] = marker;
+
+                        // Extender los límites del mapa para incluir este punto
+                        limitesMapa.extend([lat, lng]);
+                        puntosVisibles++;
+                        datosVisibles.push(item);
+                    }
+                }
+            });
+
+            // Actualizar interfaz de la Tabla
+            renderizarTabla(datosVisibles);
+
+            // Actualizar UI de estadísticas
+            document.getElementById('stats-container').classList.remove('hidden');
+            document.getElementById('puntos-visibles').innerText = puntosVisibles;
+
+            // Auto-encuadrar el mapa si hay puntos visibles
+            if (puntosVisibles > 0) {
+                // Compensamos los paneles laterales sumando padding dinámicamente
+                map.flyToBounds(limitesMapa, { 
+                    paddingTopLeft: [350, 50], // Compensa panel de filtros
+                    paddingBottomRight: [400, 50], // Compensa panel de la tabla
+                    maxZoom: 10,
+                    duration: 1.5 // Animación suave
+                });
+            }
+        }
+
+        // Función manual para el botón "Ver Todo"
+        function centrarMapa() {
+            renderizarMarcadores(); // Al renderizar, calcula los bounds automáticamente
+        }
+
+        const DATOS_FALLBACK = [
+            {
+                "ruta": "0007", "seccion": "0250", "latitud_inicio_seccion": "-18.1533553", "longitud_inicio_seccion": "-63.6144939",
+                "inicio_seccion": "BERMEJO", "fin_seccion": "ANGOSTURA", "departamento": "SANTA CRUZ", "fecha_registro_hora": "2026-05-20 05:57:30",
+                "descripcion_foto1": "<p>CALZADA SATURADA tramo Bermejo - La Angostura.</p>",
+                "estado": { "id_estado": 2, "descripcion_estado": "TRANSITABLE CON PRECAUCIÓN" },
+                "evento": { "descripcion_evento": "FLUJO DE BARRO" }, "clima": { "descripcion_clima": "NUBLADO" }
+            },
+            {
+                "ruta": "0007", "seccion": "0110", "latitud_inicio_seccion": "-17.7656900", "longitud_inicio_seccion": "-64.8102900",
+                "inicio_seccion": "POJO", "fin_seccion": "TRAPOS", "departamento": "COCHABAMBA", "fecha_registro_hora": "2026-05-19 10:04:45",
+                "descripcion_foto1": "<p>Bloqueos por conflictos sociales, tramo cerrado.</p>",
+                "estado": { "id_estado": 5, "descripcion_estado": "NO TRANSITABLE POR CONFLICTOS SOCIALES" },
+                "evento": { "descripcion_evento": "BLOQUEO POR MOTIVOS SOCIALES" }, "clima": { "descripcion_clima": "DESPEJADO" }
+            },
+            {
+                "ruta": "0011", "seccion": "0060", "latitud_inicio_seccion": "-21.4506800", "longitud_inicio_seccion": "-64.1236900",
+                "inicio_seccion": "ENTRE  RIOS", "fin_seccion": "TACUARANDI", "departamento": "TARIJA", "fecha_registro_hora": "2026-05-20 06:18:15",
+                "descripcion_foto1": "<p>Se habilitó desvío temporal por trabajos en la vía.</p>",
+                "estado": { "id_estado": 3, "descripcion_estado": "TRANSITABLE CON DESVIOS" },
+                "evento": { "descripcion_evento": "CAIDA DE ROCAS" }, "clima": { "descripcion_clima": "LLUVIOSO" }
+            },
+            {
+                "ruta": "0001", "seccion": "0010", "latitud_inicio_seccion": "-16.5000000", "longitud_inicio_seccion": "-68.1500000",
+                "inicio_seccion": "LA PAZ", "fin_seccion": "EL ALTO", "departamento": "LA PAZ", "fecha_registro_hora": "2026-05-20 06:18:15",
+                "descripcion_foto1": "<p>Tráfico fluido en la autopista principal.</p>",
+                "estado": { "id_estado": 1, "descripcion_estado": "TRANSITABLE NORMAL" },
+                "evento": { "descripcion_evento": "NINGUNO" }, "clima": { "descripcion_clima": "DESPEJADO" }
+            }
+        ];
+
+        async function cargarDatos() {
+            try {
+                const response = await fetch(ENDPOINT_API, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                datosGlobales = await response.json();
+                document.getElementById('loading-indicator').classList.add('hidden');
+                showToast('Datos en tiempo real cargados exitosamente.', 'info');
+                
+                renderizarMarcadores();
+
+            } catch (error) {
+                console.warn('Fallo en la conexión a la API. Posible bloqueo de CORS. Usando fallback.', error);
+                
+                datosGlobales = DATOS_FALLBACK;
+                document.getElementById('loading-indicator').classList.add('hidden');
+                showToast('Modo demostración. Usando datos locales (API bloqueada por CORS).', 'warning');
+                
+                renderizarMarcadores();
+            }
+        }
+
+        // Ejecutar carga de datos al iniciar
+        window.onload = cargarDatos;
+
+    </script>
+</body>
+</html>
