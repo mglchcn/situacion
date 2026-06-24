@@ -9,6 +9,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
+    <!-- Leaflet CSS & JS para el Mapa Nativo -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
@@ -26,8 +30,9 @@
         .section-content { display: none; opacity: 0; transform: translateY(15px); transition: opacity 0.4s ease, transform 0.4s ease; }
         .section-content.active { display: block; opacity: 1; transform: translateY(0); }
 
-        .marquee-container { overflow: hidden; white-space: nowrap; }
+        .marquee-container { overflow: hidden; white-space: nowrap; width: 100%; }
         .marquee-content { display: inline-block; animation: marquee 30s linear infinite; }
+        .marquee-content:hover { animation-play-state: paused; }
         @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
         .glow-text-red { text-shadow: 0 0 15px rgba(225, 29, 72, 0.4); }
@@ -39,57 +44,21 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .hide-scroll::-webkit-scrollbar { display: none; }
+
+        /* Ajuste de Leaflet Popup para combinar con Tailwind */
+        .leaflet-popup-content-wrapper { border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        .leaflet-popup-content { font-family: 'Inter', sans-serif; font-size: 0.875rem; color: #334155; }
     </style>
 </head>
 <body class="min-h-screen relative">
 
-    <div id="login-screen" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-        <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full border-t-4 border-rose-600 relative z-10">
-            <div class="flex justify-center mb-6">
-                <div class="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center text-rose-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                </div>
-            </div>
-            <h2 class="text-2xl font-black text-center text-slate-800 mb-1">ACCESO RESTRINGIDO</h2>
-            <p class="text-center text-xs font-bold text-slate-400 tracking-widest mb-8">SISTEMA DE INTELIGENCIA ESTRATÉGICA</p>
-            
-            <form id="login-form" onsubmit="attemptLogin(event)">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">ID de Usuario</label>
-                        <input type="text" id="username" class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none transition" placeholder="Ingrese: inteligencia" autocomplete="off">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Clave de Acceso</label>
-                        <input type="password" id="password" class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none transition" placeholder="Ingrese: paz2026">
-                    </div>
-                </div>
-                <div id="login-error" class="hidden mt-4 text-xs font-bold text-rose-600 bg-rose-50 p-3 rounded border border-rose-200 text-center">
-                    Credenciales incorrectas. Intento registrado.
-                </div>
-                <button type="submit" class="w-full mt-6 bg-slate-900 hover:bg-rose-700 text-white font-bold py-3 px-4 rounded-lg transition-colors flex justify-center items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
-                    Autenticar Sesión
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <div id="dashboard-container" class="hidden flex-col min-h-screen">
+    <div id="dashboard-container" class="flex flex-col min-h-screen">
         
         <!-- Top Alert Bar -->
         <div class="bg-slate-900 text-slate-300 text-xs font-mono-numbers py-1.5 marquee-container border-b border-rose-900 shrink-0">
-            <div class="marquee-content flex items-center space-x-8">
-                <span class="text-rose-500 font-bold">🔴 ALERTA DE INTELIGENCIA:</span>
-                <span>Intento de toma de peaje en Suticollo (Cochabamba) repelido.</span>
-                <span class="text-slate-500">|</span>
-                <span>Gremiales de Santa Cruz reportan amenazas de multas si no asisten a marchas.</span>
-                <span class="text-slate-500">|</span>
-                <span>Reporte FMI: Riesgo de inflación importada aumenta por bloqueos logísticos.</span>
-                <span class="text-slate-500">|</span>
-                <span class="text-rose-500 font-bold">🔴 ALERTA:</span>
-                <span>Dirigencia evista amenaza con cerco a La Paz en 48 horas.</span>
+            <div id="marquee-content" class="marquee-content flex items-center space-x-8">
+                <!-- Se inyecta vía JS -->
+                <span>Cargando alertas...</span>
             </div>
         </div>
 
@@ -103,7 +72,6 @@
                             <span class="text-lg md:text-xl font-extrabold text-slate-800 tracking-tight">SALA DE SITUACIÓN <span class="text-rose-600 font-light">| Bolivia '26</span></span>
                         </div>
                     </div>
-                    <!-- Contenedor adaptativo: ahora los botones bajan de línea si no caben en celular -->
                     <div class="flex flex-wrap items-center gap-x-6 gap-y-2 w-full md:w-auto pb-3 md:pb-0 pt-2 md:pt-0">
                         <button onclick="nav('resumen')" id="btn-resumen" class="nav-button active py-2 md:py-5 text-sm font-medium text-slate-600 hover:text-rose-600 flex items-center gap-2 whitespace-nowrap">Panel Principal</button>
                         <button onclick="nav('actores')" id="btn-actores" class="nav-button py-2 md:py-5 text-sm font-medium text-slate-600 hover:text-rose-600 flex items-center gap-2 whitespace-nowrap">Actores y Demandas</button>
@@ -136,46 +104,36 @@
                           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
                           <span class="relative inline-flex rounded-full h-2 w-2 bg-rose-600"></span>
                         </span>
-                        Pérdida Nacional Acumulada
+                        Pérdida Nacional por Bloqueos
                     </p>
-                    <p id="header-live-loss" class="text-3xl sm:text-4xl font-black text-rose-600 font-mono-numbers tracking-tighter glow-text-red">$0</p>
+                    <p class="text-3xl sm:text-4xl font-black text-rose-600 font-mono-numbers tracking-tighter glow-text-red">$2,504,456,581</p>
                 </div>
             </header>
 
             <section id="sec-resumen" class="section-content active">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                    <!-- Card 1: Puntos Bloqueo -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col relative overflow-hidden">
-                        <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Puntos de Bloqueo Activos</h3>
-                        <div class="flex items-baseline gap-2">
-                            <p id="kpi-puntos" class="text-5xl font-black text-slate-800">0</p>
-                            <span id="kpi-tendencia" class="text-sm font-medium text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full">↑ 0%</span>
-                        </div>
-                        <p class="text-sm text-slate-500 mt-4">Vías troncales interrumpidas (Cochabamba - Santa Cruz).</p>
-                    </div>
-
-                    <!-- Card 2: Sangría Económica -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <!-- Card 1: Sangría Económica -->
                     <div class="bg-slate-900 rounded-2xl shadow-lg border border-slate-800 p-6 flex flex-col relative overflow-hidden">
                         <div class="absolute inset-0 bg-gradient-to-br from-rose-900/20 to-transparent"></div>
                         <h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2 z-10">Tasa de Sangría Económica</h3>
-                        <p id="card-live-loss" class="text-3xl sm:text-4xl font-black text-white font-mono-numbers tracking-tighter z-10 mb-1">$0</p>
+                        <p class="text-3xl sm:text-4xl font-black text-white font-mono-numbers tracking-tighter z-10 mb-1">$2,504,456,581</p>
                         <div class="flex items-center gap-2 mt-auto z-10">
                             <div class="w-full bg-slate-800 rounded-full h-1.5">
-                                <div class="bg-rose-500 h-1.5 rounded-full animate-[pulse_2s_ease-in-out_infinite]" style="width: 100%"></div>
+                                <div class="bg-rose-500 h-1.5 rounded-full" style="width: 100%"></div>
                             </div>
-                            <span id="kpi-tasa-perdida" class="text-xs text-rose-400 font-mono-numbers whitespace-nowrap">+$0 / seg</span>
+                            <span class="text-xs text-rose-400 font-mono-numbers whitespace-nowrap uppercase font-bold">Cifra Estática</span>
                         </div>
                     </div>
 
-                    <!-- Card 3: Costo Logístico -->
+                    <!-- Card 2: Costo Logístico -->
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col relative overflow-hidden">
-                        <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Costo Logístico Inyectado</h3>
-                        <p id="card-live-cost" class="text-3xl sm:text-4xl font-black text-slate-700 font-mono-numbers tracking-tighter mb-1">$0</p>
+                        <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Costo de bloqueo por día</h3>
+                        <p id="card-live-cost" class="text-3xl sm:text-4xl font-black text-slate-700 font-mono-numbers tracking-tighter mb-1">$100,000</p>
                         <p class="text-sm text-slate-500 mt-auto">Financiamiento diario estimado para sostener carpas y viáticos de choque.</p>
                     </div>
                 </div>
 
-                <!-- SECCIÓN DEL MAPA: Arreglada para alinear sin espacios -->
+                <!-- SECCIÓN DEL MAPA: OpenLayers / Leaflet nativo -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col relative overflow-hidden mb-8">
                     <div class="flex items-center gap-3 mb-6">
                         <div class="p-2 bg-slate-100 text-slate-600 rounded-lg shrink-0">
@@ -188,16 +146,9 @@
                     </div>
                     
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                        <!-- IFRAME DEL MAPA: Ocupa 2 de las 3 columnas en Desktop -->
-                        <div class="lg:col-span-2 w-full h-[400px] sm:h-[500px] rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
-                            <iframe 
-                                src="https://mglchcn.github.io/situacion/mapa.html" 
-                                class="w-full h-full"
-                                style="border: none;"
-                                allowfullscreen
-                                loading="lazy"
-                                title="Mapa Interactivo de Puntos de Bloqueo">
-                            </iframe>
+                        <!-- MAPA LEAFLET: Ocupa 2 de las 3 columnas en Desktop -->
+                        <div class="lg:col-span-2 w-full h-[400px] sm:h-[500px] rounded-xl overflow-hidden border border-slate-200 bg-slate-50 relative z-0">
+                            <div id="map" class="w-full h-full"></div>
                         </div>
 
                         <!-- TABLA DE INCIDENTES: Ocupa 1 columna a la derecha -->
@@ -308,19 +259,8 @@
                             <h3 class="text-lg font-bold text-slate-800">Patrón Histórico</h3>
                         </div>
                         <p class="text-sm text-slate-600 mb-5">El manual operativo actual refleja una calca táctica de crisis de desestabilización anteriores (estrategia de cerco urbano).</p>
-                        <div class="space-y-4 flex-grow">
-                            <div class="p-4 bg-slate-50 rounded-xl border-l-4 border-slate-400">
-                                <h4 class="font-bold text-slate-700 text-sm">2003: Guerra del Gas</h4>
-                                <p class="text-xs text-slate-500 mt-1">Corte de vías troncales. Desabastecimiento inducido para generar caos urbano.</p>
-                            </div>
-                            <div class="p-4 bg-slate-50 rounded-xl border-l-4 border-slate-600">
-                                <h4 class="font-bold text-slate-700 text-sm">2019: Crisis Post-Electoral</h4>
-                                <p class="text-xs text-slate-500 mt-1">Bloqueo de plantas de hidrocarburos e insumos vitales. Grupos de choque.</p>
-                            </div>
-                            <div class="p-4 bg-rose-50 rounded-xl border-l-4 border-rose-600 shadow-sm">
-                                <h4 class="font-bold text-rose-800 text-sm">2026: Crisis Actual</h4>
-                                <p class="text-xs text-rose-700 mt-1">Estrangulamiento del eje troncal para provocar un colapso logístico y exigir acortamiento de mandato.</p>
-                            </div>
+                        <div id="patron-historico-lista" class="space-y-4 flex-grow">
+                            <!-- JS Injected Patrón Histórico -->
                         </div>
                     </div>
                 </div>
@@ -330,26 +270,6 @@
 
     <script>
         // ==========================================
-        // 🔒 SISTEMA DE LOGIN
-        // ==========================================
-        function attemptLogin(e) {
-            e.preventDefault();
-            const u = document.getElementById('username').value.trim().toLowerCase();
-            const p = document.getElementById('password').value;
-            
-            if(u === 'inteligencia' && p === 'paz2026') {
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('dashboard-container').classList.remove('hidden');
-                document.getElementById('dashboard-container').classList.add('flex');
-                initApp(); 
-            } else {
-                const err = document.getElementById('login-error');
-                err.classList.remove('hidden');
-                setTimeout(() => err.classList.add('hidden'), 3000);
-            }
-        }
-
-        // ==========================================
         // 🔗 CONEXIONES GOOGLE SHEETS
         // ==========================================
         const SHEETS_URLS = {
@@ -358,14 +278,22 @@
             economia_line: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSD2YzzFudMo4o0wG01xQiwP-vqvbwEjsfF_rmD8qnhOodzfzhAypv2G-n0EMU591hKXK7WJZPYKlba/pub?gid=1783191223&single=true&output=csv", 
             economia_pie: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSD2YzzFudMo4o0wG01xQiwP-vqvbwEjsfF_rmD8qnhOodzfzhAypv2G-n0EMU591hKXK7WJZPYKlba/pub?gid=1877619988&single=true&output=csv",  
             estrategia: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSD2YzzFudMo4o0wG01xQiwP-vqvbwEjsfF_rmD8qnhOodzfzhAypv2G-n0EMU591hKXK7WJZPYKlba/pub?gid=1349896118&single=true&output=csv",
-            mapa: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSD2YzzFudMo4o0wG01xQiwP-vqvbwEjsfF_rmD8qnhOodzfzhAypv2G-n0EMU591hKXK7WJZPYKlba/pub?gid=957356972&single=true&output=csv"    
+            patron_historico: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSD2YzzFudMo4o0wG01xQiwP-vqvbwEjsfF_rmD8qnhOodzfzhAypv2G-n0EMU591hKXK7WJZPYKlba/pub?gid=1400000000&single=true&output=csv",
+            mapa: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSD2YzzFudMo4o0wG01xQiwP-vqvbwEjsfF_rmD8qnhOodzfzhAypv2G-n0EMU591hKXK7WJZPYKlba/pub?gid=957356972&single=true&output=csv",
+            alertas: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSD2YzzFudMo4o0wG01xQiwP-vqvbwEjsfF_rmD8qnhOodzfzhAypv2G-n0EMU591hKXK7WJZPYKlba/pub?gid=0&single=true&output=csv"
         };
 
         // ==========================================
         // 📦 BASES DE DATOS LOCALES (Fallback Seguro)
         // ==========================================
         let db = {
-            kpis: { puntos: 47, tendencia: "+12%", perdidaDiaria: 28000000, costoDiario: 85000 },
+            alertas: [
+                "Intento de toma de peaje en Suticollo (Cochabamba) repelido.",
+                "Gremiales de Santa Cruz reportan amenazas de multas si no asisten a marchas.",
+                "Reporte FMI: Riesgo de inflación importada aumenta por bloqueos logísticos.",
+                "Dirigencia evista amenaza con cerco a La Paz en 48 horas."
+            ],
+            kpis: { costoDiario: 85000 },
             actores: [
                 { org: "CSUTCB (Evista)", categoria: "Actor Social", demanda: "Renuncia y elecciones anticipadas", amenaza: "Crítica", vinculo: "Línea directa opositora." },
                 { org: "Transporte Pesado", categoria: "Actor Social", demanda: "Abrogación Ley 1720, dólares, diésel.", amenaza: "Alta", vinculo: "Instrumentalizados logísticamente." },
@@ -381,17 +309,25 @@
                 { fase: "Fase 3", titulo: "Mutación Política", estado: "Ejecucion", desc: "Abandono de la Ley 1720; exigencia directa de renuncias." },
                 { fase: "Fase 4", titulo: "Objetivo Final", estado: "Latente", desc: "Cerco total y acortamiento de mandato." }
             ],
+            patronHistorico: [
+                { anio: "2003", titulo: "Guerra del Gas", desc: "Corte de vías troncales. Desabastecimiento inducido para generar caos urbano.", actual: false },
+                { anio: "2019", titulo: "Crisis Post-Electoral", desc: "Bloqueo de plantas de hidrocarburos e insumos vitales. Grupos de choque.", actual: false },
+                { anio: "2026", titulo: "Intento Fracasado de Golpe Narcoterrorista", desc: "Estrangulamiento del eje troncal para provocar un colapso logístico y exigir acortamiento de mandato.", actual: true }
+            ],
             mapa: [
-                { peso: 1.0, ubicacion: "Cochabamba Cercado", desc: "Bloqueo masivo en puentes principales. Impedimento de tránsito." },
-                { peso: 0.9, ubicacion: "Vinto / Suticollo", desc: "Enfrentamientos esporádicos con fuerzas del orden. Uso de dinamita reportado." },
-                { peso: 0.9, ubicacion: "Trópico de Cbba.", desc: "Corte de ruta interdepartamental troncal." },
-                { peso: 0.8, ubicacion: "El Alto (Senkata)", desc: "Vigilia instalada en puertas de la planta de YPFB. Amenaza de cerco." },
-                { peso: 0.6, ubicacion: "La Paz Centro", desc: "Marchas de gremiales bloqueando vías circundantes a Plaza Murillo." },
-                { peso: 0.6, ubicacion: "Santa Cruz (Plan 3000)", desc: "Amagues de enfrentamiento entre vecinos y grupos de choque." }
+                { peso: 1.0, ubicacion: "Cochabamba Cercado", lat: -17.3895, lng: -66.1568, desc: "Bloqueo masivo en puentes principales. Impedimento de tránsito." },
+                { peso: 0.9, ubicacion: "Vinto / Suticollo", lat: -17.4333, lng: -66.3167, desc: "Enfrentamientos esporádicos con fuerzas del orden. Uso de dinamita reportado." },
+                { peso: 0.9, ubicacion: "Trópico de Cbba.", lat: -16.9667, lng: -65.3833, desc: "Corte de ruta interdepartamental troncal." },
+                { peso: 0.8, ubicacion: "El Alto (Senkata)", lat: -16.5500, lng: -68.1667, desc: "Vigilia instalada en puertas de la planta de YPFB. Amenaza de cerco." },
+                { peso: 0.6, ubicacion: "La Paz Centro", lat: -16.4897, lng: -68.1193, desc: "Marchas de gremiales bloqueando vías circundantes a Plaza Murillo." },
+                { peso: 0.6, ubicacion: "Santa Cruz (Plan 3000)", lat: -17.8146, lng: -63.1364, desc: "Amagues de enfrentamiento entre vecinos y grupos de choque." }
             ]
         };
 
-        // Función utilitaria para encontrar la llave correcta ignorando mayúsculas/espacios
+        let chartInstances = {};
+        let leafletMap = null;
+        let mapMarkers = [];
+
         function findKey(row, keywords) {
             const keys = Object.keys(row);
             for(let key of keys) {
@@ -403,8 +339,18 @@
 
         async function fetchCSV(url) {
             if(!url) return null;
-            return new Promise((resolve, reject) => {
-                Papa.parse(url, { download: true, header: true, skipEmptyLines: true, complete: res => resolve(res.data), error: err => reject(err) });
+            return new Promise((resolve) => {
+                Papa.parse(url, { 
+                    download: true, 
+                    header: true, 
+                    skipEmptyLines: true, 
+                    complete: res => resolve(res.data), 
+                    error: err => {
+                        // Resuelve como null de forma silenciosa para evitar que el error de red 
+                        // rechace la promesa e inunde la consola
+                        resolve(null);
+                    } 
+                });
             });
         }
 
@@ -413,7 +359,18 @@
             statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-ping"></span> Sincronizando...`;
             statusBadge.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-yellow-50 text-yellow-700 border border-yellow-200";
             
+            let usesFallback = false;
+
             try {
+                // Alertas del Marquee
+                if(SHEETS_URLS.alertas) {
+                    const data = await fetchCSV(SHEETS_URLS.alertas);
+                    if(data && data.length > 0) {
+                        const parsedAlerts = data.map(r => findKey(r, ['alerta', 'mensaje', 'texto'])).filter(Boolean);
+                        if(parsedAlerts.length > 0) db.alertas = parsedAlerts;
+                    } else { usesFallback = true; }
+                }
+
                 // KPIs
                 if(SHEETS_URLS.kpis) {
                     const data = await fetchCSV(SHEETS_URLS.kpis);
@@ -424,12 +381,9 @@
                             if(!ind || !val) return;
                             
                             const indClean = ind.toLowerCase();
-                            if(indClean.includes('punto') || indClean.includes('bloqueo')) db.kpis.puntos = parseInt(val) || db.kpis.puntos;
-                            if(indClean.includes('tendencia')) db.kpis.tendencia = val;
-                            if(indClean.includes('perdida') || indClean.includes('pérdida')) db.kpis.perdidaDiaria = parseFloat(val) || db.kpis.perdidaDiaria;
                             if(indClean.includes('costo')) db.kpis.costoDiario = parseFloat(val) || db.kpis.costoDiario;
                         });
-                    }
+                    } else { usesFallback = true; }
                 }
 
                 // Actores
@@ -443,7 +397,7 @@
                             amenaza: findKey(r, ['amenaza', 'nivel']) || 'Baja', 
                             vinculo: findKey(r, ['vinculo', 'analisis', 'relacion']) || 'Ninguno detectado' 
                         }));
-                    }
+                    } else { usesFallback = true; }
                 }
 
                 // Económicos
@@ -452,14 +406,14 @@
                     if(data && data.length > 0) {
                         db.ecoLine.labels = data.map(r => findKey(r, ['fecha', 'dia'])).filter(Boolean);
                         db.ecoLine.data = data.map(r => parseFloat(findKey(r, ['perdida', 'monto', 'valor']))).filter(n => !isNaN(n));
-                    }
+                    } else { usesFallback = true; }
                 }
                 if(SHEETS_URLS.economia_pie) {
                     const data = await fetchCSV(SHEETS_URLS.economia_pie);
                     if(data && data.length > 0) {
                         db.ecoPie.labels = data.map(r => findKey(r, ['sector', 'rubro'])).filter(Boolean);
                         db.ecoPie.data = data.map(r => parseFloat(findKey(r, ['porcentaje', 'valor']))).filter(n => !isNaN(n));
-                    }
+                    } else { usesFallback = true; }
                 }
 
                 // Estrategia
@@ -470,13 +424,26 @@
                             fase: findKey(r, ['fase', 'paso']),
                             titulo: findKey(r, ['titulo', 'nombre']) || 'Fase Desconocida',
                             estado: findKey(r, ['estado', 'status']) || 'Latente',
-                            // Se añadió 'descripcion' a la lista de búsqueda para mayor compatibilidad
                             desc: findKey(r, ['desc', 'detalle', 'descripcion', 'descripción']) || ''
                         }));
-                    }
+                    } else { usesFallback = true; }
                 }
 
-                // Mapa (Solo la lista lateral, el Iframe hace lo suyo visualmente)
+                // Patrón Histórico
+                if(SHEETS_URLS.patron_historico) {
+                    const data = await fetchCSV(SHEETS_URLS.patron_historico);
+                    if(data && data.length > 0) {
+                        const parsedPatron = data.filter(r => findKey(r, ['anio', 'año', 'titulo'])).map(r => ({
+                            anio: findKey(r, ['anio', 'año', 'fecha']) || '',
+                            titulo: findKey(r, ['titulo', 'evento', 'nombre']) || 'Evento',
+                            desc: findKey(r, ['desc', 'detalle']) || '',
+                            actual: (findKey(r, ['actual', 'vigente']) || '').toString().toLowerCase() === 'si' || (findKey(r, ['anio', 'año']) || '').toString() === '2026'
+                        }));
+                        if(parsedPatron.length > 0) db.patronHistorico = parsedPatron;
+                    } else { usesFallback = true; }
+                }
+
+                // Mapa (Solo la lista lateral y coordenadas si existen)
                 if(SHEETS_URLS.mapa) {
                     const data = await fetchCSV(SHEETS_URLS.mapa);
                     if(data && data.length > 0) {
@@ -487,19 +454,27 @@
                                 newMapData.push({
                                     peso: parseFloat(findKey(r, ['intensidad', 'peso', 'nivel']) || 0.5),
                                     ubicacion: ubicacion,
+                                    lat: parseFloat(findKey(r, ['lat', 'latitud'])),
+                                    lng: parseFloat(findKey(r, ['lng', 'longitud'])),
                                     desc: findKey(r, ['desc', 'detalle', 'incidente']) || 'Sin detalles.'
                                 });
                             }
                         }
                         if(newMapData.length > 0) db.mapa = newMapData;
-                    }
+                    } else { usesFallback = true; }
                 }
                 
-                statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Modo en Vivo`;
-                statusBadge.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200";
+                if (usesFallback) {
+                    statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Modo Local (Fallback)`;
+                    statusBadge.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200";
+                } else {
+                    statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Sincronizado`;
+                    statusBadge.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200";
+                }
+                
             } catch (error) {
-                console.error("Error de Sincronización:", error);
-                statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Usando Fallback`;
+                console.error("Error general de Sincronización:", error);
+                statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Fallo Crítico (Local)`;
                 statusBadge.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200";
             }
 
@@ -513,14 +488,62 @@
             return "bg-slate-100 text-slate-700 border-slate-200";
         }
 
+        function renderMap() {
+            if (!leafletMap) {
+                // Centrado en Bolivia
+                leafletMap = L.map('map').setView([-16.2902, -63.5887], 6);
+                
+                // Capa visual clara de estilo CartoDB
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                    subdomains: 'abcd',
+                    maxZoom: 20
+                }).addTo(leafletMap);
+            }
+
+            // Limpiar marcadores antiguos
+            mapMarkers.forEach(m => leafletMap.removeLayer(m));
+            mapMarkers = [];
+
+            // Añadir nuevos marcadores
+            db.mapa.forEach(m => {
+                // Si la sincronización no trajo lat/lng, intentamos usar los predeterminados de db.mapa si existen
+                if (m.lat && m.lng) {
+                    let color = m.peso >= 0.8 ? '#E11D48' : (m.peso >= 0.6 ? '#F97316' : '#EAB308');
+                    
+                    let marker = L.circleMarker([m.lat, m.lng], {
+                        radius: Math.max(8, m.peso * 15),
+                        fillColor: color,
+                        color: color,
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.6
+                    })
+                    .bindPopup(`<strong>${m.ubicacion}</strong><br><span style="font-size: 11px;">${m.desc}</span>`)
+                    .addTo(leafletMap);
+                    
+                    mapMarkers.push(marker);
+                }
+            });
+        }
+
         function renderAll() {
-            // 1. KPIs
-            document.getElementById('kpi-puntos').innerText = db.kpis.puntos;
-            document.getElementById('kpi-tendencia').innerText = db.kpis.tendencia;
-            
-            lossPerSecond = db.kpis.perdidaDiaria / 86400;
-            costPerSecond = db.kpis.costoDiario / 86400;
-            document.getElementById('kpi-tasa-perdida').innerText = `+$${Math.round(lossPerSecond)} / seg`;
+            // 0. Renderizar Marquee (Alertas)
+            const marquee = document.getElementById('marquee-content');
+            if (marquee && db.alertas && db.alertas.length > 0) {
+                const prefix = '<span class="text-rose-500 font-bold">🔴 ALERTA DE INTELIGENCIA:</span>';
+                const separator = '<span class="text-slate-500">|</span>';
+                
+                let alertsHtml = db.alertas.map(a => `<span>${a}</span>`).join(separator);
+                // Repetimos para que el efecto visual no se corte de repente
+                marquee.innerHTML = `${prefix} ${alertsHtml} ${separator} ${prefix} ${alertsHtml}`;
+            }
+
+            // 1. Costo Diario (Formato USD)
+            const formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+            if(document.getElementById('card-live-cost')) {
+                document.getElementById('card-live-cost').innerText = formatter.format(db.kpis.costoDiario);
+            }
 
             // 2. Actores
             const tbodySociales = document.getElementById('tabla-actores-sociales');
@@ -546,7 +569,6 @@
                     const isConsolidada = estado.includes('consolidada');
                     const isEjecucion = estado.includes('ejecucion') || estado.includes('ejecución');
                     
-                    // Corrección del bug de Tailwind CDN: uso de clases completas explícitas
                     let textColor = isConsolidada ? 'text-slate-800' : (isEjecucion ? 'text-rose-800' : 'text-red-800');
                     let dotClass = isEjecucion ? 'bg-rose-500 pulse-dot' : (isConsolidada ? 'bg-slate-500' : 'bg-red-500');
                     let boxClass = isEjecucion ? 'bg-rose-50 p-4 rounded-r-xl border border-rose-100 -ml-2' : '';
@@ -564,7 +586,24 @@
                 }).join('');
             }
 
-            // 4. Incidentes (Lista del Mapa)
+            // Patrón Histórico
+            const patronContainer = document.getElementById('patron-historico-lista');
+            if(patronContainer && db.patronHistorico) {
+                patronContainer.innerHTML = db.patronHistorico.map(p => {
+                    let isActual = p.actual === true || p.actual === "true" || (p.anio && p.anio.toString().includes("2026"));
+                    let boxColor = isActual ? "border-rose-600 bg-rose-50 shadow-sm" : "border-slate-500 bg-slate-50";
+                    let titleColor = isActual ? "text-rose-800" : "text-slate-700";
+                    let descColor = isActual ? "text-rose-700" : "text-slate-500";
+                    
+                    return `
+                    <div class="p-4 rounded-xl border-l-4 ${boxColor}">
+                        <h4 class="font-bold ${titleColor} text-sm">${p.anio}: ${p.titulo}</h4>
+                        <p class="text-xs ${descColor} mt-1">${p.desc}</p>
+                    </div>`;
+                }).join('');
+            }
+
+            // 4. Incidentes (Lista del Mapa y Renderizado Leaflet)
             const listaMapa = document.getElementById('lista-mapa');
             if(listaMapa && db.mapa.length > 0) {
                 const sortedMapa = [...db.mapa].sort((a,b) => b.peso - a.peso);
@@ -572,7 +611,7 @@
                     let bgBadge = m.peso >= 0.8 ? 'bg-rose-50 text-rose-700 border-rose-200' : (m.peso >= 0.6 ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200');
                     let bgLine = m.peso >= 0.8 ? 'bg-rose-600' : (m.peso >= 0.6 ? 'bg-orange-500' : 'bg-yellow-400');
                     return `
-                    <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm relative overflow-hidden transition hover:shadow-md">
+                    <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm relative overflow-hidden transition hover:shadow-md cursor-pointer" onclick="if(leafletMap) leafletMap.setView([${m.lat || -16.29}, ${m.lng || -63.58}], 9)">
                         <div class="absolute top-0 left-0 w-1 h-full ${bgLine}"></div>
                         <div class="pl-2">
                             <div class="flex justify-between items-start mb-1 gap-2">
@@ -587,28 +626,11 @@
                 listaMapa.innerHTML = '<div class="text-center p-4 text-slate-400 text-sm">No hay incidentes reportados.</div>';
             }
 
+            // Renderizar el mapa de Leaflet
+            renderMap();
+            
+            // Iniciar gráficos Chart.js
             initCharts();
-        }
-
-        let chartInstances = {};
-        const startOfCrisis = new Date('2026-05-01T00:00:00').getTime();
-        let lossPerSecond = 0;
-        let costPerSecond = 0;
-        let isCounterRunning = false;
-
-        function updateRealTimeCounters() {
-            const simulatedNow = Math.max(new Date().getTime(), new Date('2026-05-14T09:00:00').getTime()); 
-            const elapsed = (simulatedNow - startOfCrisis) / 1000;
-            const formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
-            
-            const liveLoss = formatter.format(elapsed * lossPerSecond);
-            const liveCost = formatter.format(elapsed * costPerSecond);
-
-            document.getElementById('header-live-loss').innerText = liveLoss;
-            if(document.getElementById('card-live-loss')) document.getElementById('card-live-loss').innerText = liveLoss;
-            if(document.getElementById('card-live-cost')) document.getElementById('card-live-cost').innerText = liveCost;
-            
-            requestAnimationFrame(updateRealTimeCounters);
         }
 
         function initCharts() {
@@ -652,6 +674,11 @@
             document.getElementById('sec-' + id).classList.add('active');
             document.getElementById('btn-' + id).classList.add('active');
             
+            // Refrescar mapa (A veces Leaflet no renderiza bien si su contenedor estaba display:none)
+            if(id === 'resumen') {
+                setTimeout(() => { if(leafletMap) leafletMap.invalidateSize(); }, 100);
+            }
+            
             if(id === 'economia') {
                 setTimeout(() => initCharts(), 100); 
             }
@@ -670,11 +697,10 @@
 
         function initApp() {
             syncAllData();
-            if(!isCounterRunning) {
-                updateRealTimeCounters();
-                isCounterRunning = true;
-            }
         }
+
+        // Auto-iniciar la aplicación cuando cargue la página
+        document.addEventListener("DOMContentLoaded", initApp);
     </script>
 </body>
 </html>
